@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ZuccBot": {
+      "commandName": "Project",
+      "commandLineArgs": "--version"
+    }
+  }
+}
