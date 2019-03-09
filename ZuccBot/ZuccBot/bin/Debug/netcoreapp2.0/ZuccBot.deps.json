@@ -1,14 +1,16 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "c242b9beb938dc7e8d20b0c407114ead61dc0052"
+    "signature": "a9b9096a1abec5b0b06698c64706661607f48c71"
   },
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v2.0": {
       "ZuccBot/1.0.0": {
         "dependencies": {
-          "DSharpPlus": "3.2.3"
+          "DSharpPlus": "3.2.3",
+          "DSharpPlus.CommandsNext": "3.2.3",
+          "DSharpPlus.Interactivity": "3.2.3"
         },
         "runtime": {
           "ZuccBot.dll": {}
@@ -24,6 +26,22 @@
         },
         "runtime": {
           "lib/netstandard2.0/DSharpPlus.dll": {}
+        }
+      },
+      "DSharpPlus.CommandsNext/3.2.3": {
+        "dependencies": {
+          "DSharpPlus": "3.2.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/DSharpPlus.CommandsNext.dll": {}
+        }
+      },
+      "DSharpPlus.Interactivity/3.2.3": {
+        "dependencies": {
+          "DSharpPlus": "3.2.3"
+        },
+        "runtime": {
+          "lib/netstandard2.0/DSharpPlus.Interactivity.dll": {}
         }
       },
       "Microsoft.CSharp/4.3.0": {
@@ -1017,6 +1035,20 @@
       "sha512": "sha512-MDhZwYv5N/3xPrIpIx92q5o7JPvxCyDXYJAv6fC+GVdzJfUSL9DAPm55lH1I5wZ+Fv9/05Cq/KPVxM0lfh3rog==",
       "path": "dsharpplus/3.2.3",
       "hashPath": "dsharpplus.3.2.3.nupkg.sha512"
+    },
+    "DSharpPlus.CommandsNext/3.2.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-58KaSGeefzOl/Bzthmo2yGMr1gy5bvBi2cIVFxWkn+K0LNCOVJ3zN13/uC/daQGOD2phLIRHMkjrW+OO8FJY/w==",
+      "path": "dsharpplus.commandsnext/3.2.3",
+      "hashPath": "dsharpplus.commandsnext.3.2.3.nupkg.sha512"
+    },
+    "DSharpPlus.Interactivity/3.2.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dqNj48DOxExZml4LfPHXXKrBMm7XSk1a9uMTb6jGA163vdLieAU99vLSbeKhfLMoHFFYAu3Nc/QzO5jarEvptQ==",
+      "path": "dsharpplus.interactivity/3.2.3",
+      "hashPath": "dsharpplus.interactivity.3.2.3.nupkg.sha512"
     },
     "Microsoft.CSharp/4.3.0": {
       "type": "package",
