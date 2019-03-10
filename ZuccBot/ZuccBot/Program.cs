@@ -2,10 +2,11 @@
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
-using ZuccBot.Commands;
+using Discord.DiscordBots.ZuccBot;
 using DSharpPlus.Interactivity;
+using Discord.DiscordBots.ZuccBot.Games.GenericRPG;
 
-namespace ZuccBot.Core
+namespace Discord.DiscordBots.Core
 {
     class Program
     {
@@ -27,22 +28,13 @@ namespace ZuccBot.Core
                 LogLevel = LogLevel.Debug
             });
 
-            //Not the original Pong but it's definitely something.
-            discord.MessageCreated += async e =>
-            {
-                if (e.Message.Content.ToLower().StartsWith("ping"))
-                {
-                    Console.WriteLine("pong!");
-                    await e.Message.RespondAsync("pong!");
-                }
-            };
-
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefix = ">"
             });
 
-            commands.RegisterCommands<ZuccCommands>();
+            commands.RegisterCommands<Commands>();
+            commands.RegisterCommands<GenericRPG>();
 
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
             await Task.Delay(-1);//Wait infinitely. Bot purgatory.
