@@ -8,11 +8,9 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
     {
         public string name;//Name of the entity, often used in messages
         public int health;//Health of the entity
+        public List<Entity> entities = new List<Entity>();
         public List<Item> items = new List<Item>();//Inventory of the entity
         public Location location;//Current location of the entity
-
-        //Gold, Moola, etc.
-        int money;
 
         //Armor slots that can contian Items.
         public Item headSlot;//Equip Items to the head.
@@ -24,9 +22,23 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
         public Item primary;//Primary hand, like a sword.
         public Item secondary;//Secondary hand, like a shield, torch, or potion.
 
-        public Entity(string _name, int _damage, int _health, Location _location, int money)
-        {
+        //Currently for debugging purposes
+        public int damage;
 
+        //these will be implemented later
+        public int strength = 0;
+        public int dexterity = 0;
+        public int constitution = 0;
+        public int intelligence = 0;
+        public int widsom = 0;
+        public int charisma = 0;
+
+        public Entity(string _name, int _damage, int _health, Location _location)
+        {
+            name = _name;
+            damage = _damage;
+            health = _health;
+            location = _location;
         }
     }
 }

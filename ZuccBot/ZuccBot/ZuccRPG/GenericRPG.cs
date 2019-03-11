@@ -32,7 +32,7 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
             locations.Add(pawnShop);
 
 
-            Entity goblin = new Entity("Goblin", 1, 5, locations[locations.Count - 1], 1);
+            Entity goblin = new Entity("Goblin", 1, 5, locations[locations.Count - 1]);
             List<Entity> dungeonEntities = new List<Entity>();
             dungeonEntities.Add(goblin);
             Location dungeon = new Location("Dungeon", dungeonEntities, null);
@@ -54,7 +54,7 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
                             if(_member == ctx.Member)
                             {
                                 users[_member].location = _location;
-                                await ctx.RespondAsync($"{ctx.Member.DisplayName}'s avatar was moved to `{_location.name}`");
+                                await ctx.RespondAsync($"{ctx.User.Mention}'s avatar was moved to `{_location.name}`");
                                 break;
                             }
                         }
@@ -78,20 +78,28 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
                 {
                     if (_member == ctx.Member)
                     {
-                        await ctx.RespondAsync($"Information on '{users[_member].location.name}' : \n**Name** : `{users[_member].location.name}`\n");
-                        await ctx.RespondAsync($"`**Entities** : \n");
-                        for(int i = 0; i < (users[_member].location.entities.Count); i++)
+                        await ctx.RespondAsync($"Information on `{users[_member].location.name}`: \n**Name** : \n`{users[_member].location.name}`\n");
+                        if(users[_member].location.entities != null && users[_member].location.entities.Count > 0)
                         {
-                            await ctx.RespondAsync($"{users[_member].location.entities[i].name}");
+                            await ctx.RespondAsync($"**Entities** : \n");
+                            foreach(Location _location in locations)
+                            {
+                                if (_location.name == users[_member].location.name)
+                                {
+                                    foreach (Entity _entity in users[_member].location.entities)
+                                    {
+                                        await ctx.RespondAsync($"`{_entity.name}`\n");
+                                    }
+                                }
+                            }
+                            break;
                         }
-                        await ctx.RespondAsync($"`");
-                        break;
                     }
                 }
             }
             catch
             {
-                //If an exception was thrown (probaby meaning the user never made a character) it then asks them if they made one yet.
+                //If an exception was thrown (probaby meaning something was null, usually something to do with the location or location.entities being null) it then asks them if they made one yet.
                 await ctx.RespondAsync($"A serious problem has occurred.");
             }
         }
@@ -109,11 +117,11 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
         [Command(commandPrefix + "CreateCharacter")]
         public async Task CreateCharacter(CommandContext ctx)
         {
-            await ctx.RespondAsync($"Started creating a character for {ctx.Member.DisplayName}...");
+            await ctx.RespondAsync($"Started creating a character for {ctx.User.Mention}...");
             await ctx.TriggerTypingAsync();
-            Entity player = new Entity(ctx.Member.DisplayName, 2, 100, locations[0], 5);
+            Entity player = new Entity(ctx.Member.DisplayName, 2, 100, locations[0]);
             users.Add(ctx.Member, player);
-            await ctx.RespondAsync($"Finished creating a character for {ctx.Member.DisplayName}! \nHappy trails, partner!");
+            await ctx.RespondAsync($"Finished creating a character for {ctx.User.Mention}! \nHappy trails, partner!");
         }
 
         [Command(commandPrefix + "Players")]
@@ -122,6 +130,56 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
             foreach(DiscordMember _member in users.Keys)
             {
                 await ctx.RespondAsync($"{_member.DisplayName}\n");
+            }
+        }
+
+        [Command(commandPrefix + "Attack"), Aliases("attack", "fight", "hit", "Fight", "Hit")]
+        public async Task Attack(CommandContext ctx, string name)
+        {
+            try
+            {
+                foreach (DiscordMember _member in users.Keys)
+                {
+                    if (_member == ctx.Member)
+                    {
+                        if (users[_member].location.entities != null && users[_member].location.entities.Count > 0)
+                        {
+                            foreach (Location _location in locations)
+                            {
+                                if (_location.name == users[_member].location.name)
+                                {
+                                    foreach (Entity _entity in users[_member].location.entities)
+                                    {
+                                        if (_entity.name == name)
+                                        {
+                                            await ctx.RespondAsync($"{ctx.User.Mention} is attacking `{_entity.name}` in `{users[_member].location.name}`.");
+                                            await ctx.TriggerTypingAsync();
+                                            _entity.health -= users[_member].damage;
+                                            if (_entity.health <= 0)
+                                            {
+                                                await ctx.RespondAsync($"{ctx.User.Mention} has killed `{_entity.name}` at `{users[_member].location.name}`.");
+                                                _location.entities.Remove(_entity);
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                await ctx.RespondAsync($"{ctx.User.Mention} has attacked `{_entity.name}` for `{users[_member].damage}` damage at `{users[_member].location.name}`.");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            await ctx.RespondAsync($"There are no entities to attack in `{users[_member].location.name}`.");
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                await ctx.RespondAsync($"A serious problem has occurred.");
             }
         }
     }
