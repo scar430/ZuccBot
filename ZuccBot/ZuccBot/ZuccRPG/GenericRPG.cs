@@ -116,55 +116,30 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
         {
             try
             {
-                /*
-                //For every member that has created a character
-                foreach (DiscordMember _member in users.Keys)
-                {
-                    //If the user is equal to the user that initiated the command.
-                    if (_member == ctx.Member)
-                    {
-                        //Being the list by stating what location this information pertains to and list it's name.
-                        await ctx.RespondAsync($"Information on `{users[_member].location.name}`: \n**Name** : \n`{users[_member].location.name}`\n");
-                        
-                        //If there are entities in the location...
-                        if(users[_member].location.entities != null && users[_member].location.entities.Count > 0)
-                        {
-                            //Begin the list of entities by stating it is entities
-                            await ctx.RespondAsync($"**Entities** : \n");
-                            
-                            //Look through all the locations
-                            foreach(Location _location in locations)
-                            {
-                                //If the location is the one the user is in...
-                                if (_location.name == users[_member].location.name)
-                                {
-                                    //For every entity at the location...
-                                    foreach (Entity _entity in users[_member].location.entities)
-                                    {
-                                        //Print out the entity's name
-                                        await ctx.RespondAsync($"`{_entity.name}`\n");
-                                    }
-                                }
-                            }
-                            //Break may not be needed (Note to self while I'm looking at this on GitHub)
-                            break;
-                        }
-                    }
-                }*/
-                
                 //Being the list by stating what location this information pertains to and list it's name.
                 await ctx.RespondAsync($"Information on `{users[ctx.Member].location.name}`: \n**Name** : \n`{users[ctx.Member].location.name}`\n");
-                
+
                 //If there are entities in the location...
-                if(users[ctx.Member].location.entities != null && users[ctx.Member].location.entities.Count > 0){
-                    
-                    //For every entity at the location...
-                    foreach(Entity _entity in users[ctx.Member].location.entities){
-                        //Print out the entity's name
-                        await ctx.RespondAsync($"`_entity.name`");
+                if (users[ctx.Member].location.entities != null && users[ctx.Member].location.entities.Count > 0)
+                {
+                    //Begin the list of entities by stating it is entities
+                    await ctx.RespondAsync($"**Entities** : \n");
+
+                    //Look through all the locations
+                    foreach (Location _location in locations)
+                    {
+                        //If the location is the one the user is in...
+                        if (_location.name == users[ctx.Member].location.name)
+                        {
+                            //For every entity at the location...
+                            foreach (Entity _entity in users[ctx.Member].location.entities)
+                            {
+                                //Print out the entity's name
+                                await ctx.RespondAsync($"`{_entity.name}`\n");
+                            }
+                        }
                     }
                 }
-
             }
             catch
             {
@@ -180,7 +155,7 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
         public async Task WhatLocations(CommandContext ctx)
         {
             //The Bot announces it is listing something
-            await ctx.RespondAsync($"Here's a list of locations for ctx.User.Mention : ");
+            await ctx.RespondAsync($"Here's a list of locations for {ctx.User.Mention} : ");
             for (int i = 0; i < (locations.Count); i++)
             {
                 //For every accessible location there is, print it's name
@@ -230,71 +205,42 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
             //In case of exceptions...
             try
             {
-                /*
-                foreach (DiscordMember _member in users.Keys)
+                if (users[ctx.Member].location.entities != null && users[ctx.Member].location.entities.Count > 0)
                 {
-                    if (_member == ctx.Member)
+                    foreach (Location _location in locations)
                     {
-                        if (users[_member].location.entities != null && users[_member].location.entities.Count > 0)
+                        if (_location.name == users[ctx.Member].location.name)
                         {
-                            foreach (Location _location in locations)
+                            foreach (Entity _entity in users[ctx.Member].location.entities)
                             {
-                                if (_location.name == users[_member].location.name)
+                                if (_entity.name == name)
                                 {
-                                    foreach (Entity _entity in users[_member].location.entities)
-                                    {
-                                        if (_entity.name == name)
-                                        {
-                                            await ctx.RespondAsync($"{ctx.User.Mention} is attacking `{_entity.name}` in `{users[_member].location.name}`.");
-                                            await ctx.TriggerTypingAsync();
-                                            _entity.health -= users[_member].damage;
-                                            if (_entity.health <= 0)
-                                            {
-                                                await ctx.RespondAsync($"{ctx.User.Mention} has killed `{_entity.name}` at `{users[_member].location.name}`.");
-                                                _location.entities.Remove(_entity);
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                await ctx.RespondAsync($"{ctx.User.Mention} has attacked `{_entity.name}` for `{users[_member].damage}` damage at `{users[_member].location.name}`.");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            await ctx.RespondAsync($"There are no entities to attack in `{users[_member].location.name}`.");
-                        }
-                    }
-                }*/
-                if(users[ctx.Member].location.entities != null && users[ctx.Member].location.entities.Count > 0){
-                    foreach(Location _location in locations){
-                        if(_location.name == users[ctx.Member].location.name){
-                            foreach(Entity _entity in users[ctx.Member].location.entities){
-                                if(_entity.name == name){
                                     await ctx.RespondAsync($"{ctx.User.Mention} is attacking `{_entity.name}` in `{users[ctx.Member].location.name}`.");
                                     await ctx.TriggerTypingAsync();
                                     _entity.health -= users[ctx.Member].damage;
-                                    
-                                    if(_entity.health <= 0){
-                                        await ctx.RespondAsync($"{ctx.User.Mention} is attacking `{_entity.name}` in `{users[ctx.Member].location.name}``");
+                                    if (_entity.health <= 0)
+                                    {
+                                        await ctx.RespondAsync($"{ctx.User.Mention} has killed `{_entity.name}` at `{users[ctx.Member].location.name}`.");
                                         _location.entities.Remove(_entity);
                                         break;
                                     }
-                                    else{
-                                        await ctx.RespondAsync($"{ctx.User.Mention} has attacked `{_entity.name}` for `{users[ctx.Member].damage}` at `{users[ctx.Member].name}`.");
+                                    else
+                                    {
+                                        await ctx.RespondAsync($"{ctx.User.Mention} has attacked `{_entity.name}` for `{users[ctx.Member].damage}` damage at `{users[ctx.Member].location.name}`.");
                                     }
                                 }
                             }
                         }
                     }
                 }
+                else
+                {
+                    await ctx.RespondAsync($"There are no entities to attack in `{users[ctx.Member].location.name}`.");
+                }
             }
             catch
             {
-                //As of now (March 12 2019), I'm not sure why this would be thrown as I have never had it happen. If you do get this exception, Good Luck!
+                //As of now (March 12 2019), I'm not sure why this would be thrown as I have never had it happen, and there's nothing (I know of) that could cause it. If you do get this exception, Good Luck!
                 await ctx.RespondAsync($"An unknown error has occurred.");
             }
         }

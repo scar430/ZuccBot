@@ -5986,11 +5986,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\scar4\\Desktop\\Data\\GitHubRepositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccBot.csproj",
+      "projectUniqueName": "C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccBot.csproj",
       "projectName": "ZuccBot",
-      "projectPath": "C:\\Users\\scar4\\Desktop\\Data\\GitHubRepositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccBot.csproj",
+      "projectPath": "C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccBot.csproj",
       "packagesPath": "C:\\Users\\scar4\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\scar4\\Desktop\\Data\\GitHubRepositories\\ZuccBot\\ZuccBot\\ZuccBot\\obj\\",
+      "outputPath": "C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

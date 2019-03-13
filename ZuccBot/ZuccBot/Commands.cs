@@ -16,8 +16,8 @@ namespace Discord.DiscordBots.ZuccBot
         [Command("ShutDown"), Aliases("off", "shutdown", "shutoff", "die", "death", "sleep"), RequireOwner, Hidden]
         public async Task ShutOff(CommandContext ctx)
         {
-            await ctx.RespondAsync($"Going to sleep... maybe forever... goodbye...");//
-            Environment.Exit(420);
+            await ctx.RespondAsync($"ZuccBot is turning off.");
+            Environment.Exit(420);//huehuehuehue
         }
         
 
