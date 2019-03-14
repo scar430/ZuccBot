@@ -6,6 +6,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using System.Data.SQLite;
 
 namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
 {
@@ -16,7 +17,9 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
         List<Location> locations = new List<Location>();//All the locations in this world.
 
         Dictionary<DiscordMember, Entity> users = new Dictionary<DiscordMember, Entity>();//Dictionary<Key, Value> (It's basically a HashMap from Java) that is used to pair up Discord Users with their character
-        
+
+        SQLiteConnection curConnection = new SQLiteConnection("Data Source =:memory:; Version = 3; New = True;");//Create a new connection.
+
         //**START** initialize the world.
         //Command : rpgCreateWorld
         //Current way to create worlds, this was made to take parameters however I haven't added them yet and may change this to start on startup
@@ -26,7 +29,29 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
             //***PROCESS STARTED***
             //Tell the user that the world is being created, good for understanding what is currently happening and if the world has even begun generating
             await ctx.RespondAsync($"Started to create a new world...");
-            
+
+            SQLiteConnection.CreateFile(ctx.Guild.Name + "RPGdatabase.sqlite");
+
+            //**NOTE** don't forget to add a close.
+            curConnection.Open();//Open the connection, this bad boy is ready to go.
+
+            string sql = "create table names (name string)";
+
+            sql = "insert into names (name) values (" + ctx.Member.Mention + ")";
+            SQLiteCommand command = new SQLiteCommand(sql, curConnection);
+            command.ExecuteNonQuery();
+
+            sql = "select " + ctx.Member.Mention + " from names order by name desc";
+            command = new SQLiteCommand(sql, curConnection);
+
+            SQLiteDataReader reader = command.ExecuteReader();
+
+            sql = "select * from highscores order by score desc";
+            command = new SQLiteCommand(sql, curConnection);
+            reader = command.ExecuteReader();
+            while (reader.Read())
+                Console.WriteLine("Name: " + reader["name"]);
+
             //Typing indicator, indicates to the user that the bot is getting the job done, good for telling if the Bot ran into an error mid-process.
             await ctx.TriggerTypingAsync();
             
@@ -60,7 +85,54 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
             //Tell the user that the process has been finished and they are free to play the game
             await ctx.RespondAsync($"Created a new world to explore!");
         }
-        
+
+        //**Create Character**
+        //Command : rpgCreateCharacter
+        //This function is subject to a lot of change.
+        [Command(commandPrefix + "CreateCharacter")]
+        public async Task CreateCharacter(CommandContext ctx)
+        {
+            //Tell the user the proccess has begun.
+            await ctx.RespondAsync($"Started creating a character for {ctx.User.Mention}...");
+
+            //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
+            await ctx.TriggerTypingAsync();
+
+            //Create a table to read values from.
+            string sql = "create table names (name string)";
+
+            SQLiteCommand command = new SQLiteCommand(sql, curConnection);
+
+            command.ExecuteNonQuery();
+
+            sql = ("insert into names (name) values ( '" + ctx.Member.Mention + "' )");
+
+            command = new SQLiteCommand(sql, curConnection);
+
+            command.ExecuteNonQuery();
+
+            //Create a new Entity
+            Entity player = new Entity(ctx.Member.DisplayName, 2, 100, locations[0]);
+            users.Add(ctx.Member, player);//Pair this entity with the member who initiated the command into the dicitionary "users"
+            await ctx.RespondAsync($"Finished creating a character for {ctx.User.Mention}! \nHappy trails, partner!");//Let's the user know the process is over and was completed successfully and is also a reference :)
+        }
+
+        //**LIST PLAYERS**
+        //Command : rpgPlayers
+        //Lists all of the players who are partaking in the rpg (list of players is limited to server.)
+        [Command(commandPrefix + "Players")]
+        public async Task Players(CommandContext ctx)
+        {
+            
+            //For every member who has created an avatar...
+            foreach (DiscordMember _member in users.Keys)
+            {
+                //List the name of the current iterated player
+                await ctx.RespondAsync($"{_member.DisplayName}\n");
+            }
+            
+        }
+
         //**TRAVEL**
         //Command : rpgGoTo specifiedLocation
         [Command(commandPrefix + "GoTo"), Aliases(commandPrefix + "goto", commandPrefix + "go", commandPrefix + "to")]
@@ -147,7 +219,7 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
                 await ctx.RespondAsync($"A serious problem has occurred. The user has probably __NOT__ created a character yet.");
             }
         }
-        
+
         //**LIST LOCATIONS**
         //Command : rpgWhatLocations
         //This is usually used to find locations to travel to with 'rpgGoTo'
@@ -160,38 +232,6 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
             {
                 //For every accessible location there is, print it's name
                 await ctx.RespondAsync($"\n`{locations[i].name}`");
-            }
-        }
-        
-        //**Create Character**
-        //Command : rpgCreateCharacter
-        //This function is subject to a lot of change.
-        [Command(commandPrefix + "CreateCharacter")]
-        public async Task CreateCharacter(CommandContext ctx)
-        {
-            //Tell the user the proccess has begun.
-            await ctx.RespondAsync($"Started creating a character for {ctx.User.Mention}...");
-            
-            //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
-            await ctx.TriggerTypingAsync();
-            
-            //Create a new Entity
-            Entity player = new Entity(ctx.Member.DisplayName, 2, 100, locations[0]);
-            users.Add(ctx.Member, player);//Pair this entity with the member who initiated the command into the dicitionary "users"
-            await ctx.RespondAsync($"Finished creating a character for {ctx.User.Mention}! \nHappy trails, partner!");//Let's the user know the process is over and was completed successfully and is also a reference :)
-        }
-
-        //**LIST PLAYERS**
-        //Command : rpgPlayers
-        //Lists all of the players who are partaking in the rpg (list of players is limited to server.)
-        [Command(commandPrefix + "Players")]
-        public async Task Players(CommandContext ctx)
-        {
-            //For every member who has created an avatar...
-            foreach(DiscordMember _member in users.Keys)
-            {
-                //List the name of the current iterated player
-                await ctx.RespondAsync($"{_member.DisplayName}\n");
             }
         }
         
