@@ -1,0 +1,11 @@
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\bin\Debug\netcoreapp2.1\ZuccBot.deps.json
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\bin\Debug\netcoreapp2.1\ZuccBot.runtimeconfig.json
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\bin\Debug\netcoreapp2.1\ZuccBot.runtimeconfig.dev.json
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\bin\Debug\netcoreapp2.1\ZuccBot.dll
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\bin\Debug\netcoreapp2.1\ZuccBot.pdb
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\obj\Debug\netcoreapp2.1\ZuccBot.csprojAssemblyReference.cache
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\obj\Debug\netcoreapp2.1\ZuccBot.csproj.CoreCompileInputs.cache
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\obj\Debug\netcoreapp2.1\ZuccBot.AssemblyInfoInputs.cache
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\obj\Debug\netcoreapp2.1\ZuccBot.AssemblyInfo.cs
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\obj\Debug\netcoreapp2.1\ZuccBot.dll
+C:\Users\fir1.MY\Desktop\ProcessingProjects\ProcessingGithub\ZuccBot\ZuccBot\ZuccBot\obj\Debug\netcoreapp2.1\ZuccBot.pdb
