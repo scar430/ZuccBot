@@ -7,7 +7,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 
-namespace Discord.DiscordBots.ZuccBot
+namespace ZuccBot
 {
     public class Commands
     {

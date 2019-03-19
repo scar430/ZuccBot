@@ -1,24 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Entities;
-using System.Data.SQLite;
+using System.Linq;
+using ZuccBot.ZuccRPG.Generic;
+//using System.Data.SQLite;
 
-namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
+namespace ZuccBot.ZuccRPG
 {
     public class GenericRPG
     {
         //***NOTE*** Games are server based so your characters can not interact with games on other servers and can not be carried over to other servers.
-        const string commandPrefix = "rpg";
+
+        const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg 
+
         List<Location> locations = new List<Location>();//All the locations in this world.
+        List<Race> races = new List<Race>();//All the availible races
 
         Dictionary<DiscordMember, Entity> users = new Dictionary<DiscordMember, Entity>();//Dictionary<Key, Value> (It's basically a HashMap from Java) that is used to pair up Discord Users with their character
-
-        SQLiteConnection curConnection = new SQLiteConnection("Data Source =:memory:; Version = 3; New = True;");//Create a new connection.
 
         //**START** initialize the world.
         //Command : rpgCreateWorld
@@ -29,28 +32,6 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
             //***PROCESS STARTED***
             //Tell the user that the world is being created, good for understanding what is currently happening and if the world has even begun generating
             await ctx.RespondAsync($"Started to create a new world...");
-
-            SQLiteConnection.CreateFile(ctx.Guild.Name + "RPGdatabase.sqlite");
-
-            //**NOTE** don't forget to add a close.
-            curConnection.Open();//Open the connection, this bad boy is ready to go.
-
-            string sql = "create table names (name string)";
-
-            sql = "insert into names (name) values (" + ctx.Member.Mention + ")";
-            SQLiteCommand command = new SQLiteCommand(sql, curConnection);
-            command.ExecuteNonQuery();
-
-            sql = "select " + ctx.Member.Mention + " from names order by name desc";
-            command = new SQLiteCommand(sql, curConnection);
-
-            SQLiteDataReader reader = command.ExecuteReader();
-
-            sql = "select * from highscores order by score desc";
-            command = new SQLiteCommand(sql, curConnection);
-            reader = command.ExecuteReader();
-            while (reader.Read())
-                Console.WriteLine("Name: " + reader["name"]);
 
             //Typing indicator, indicates to the user that the bot is getting the job done, good for telling if the Bot ran into an error mid-process.
             await ctx.TriggerTypingAsync();
@@ -98,18 +79,8 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
             //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
             await ctx.TriggerTypingAsync();
 
-            //Create a table to read values from.
-            string sql = "create table names (name string)";
-
-            SQLiteCommand command = new SQLiteCommand(sql, curConnection);
-
-            command.ExecuteNonQuery();
-
-            sql = ("insert into names (name) values ( '" + ctx.Member.Mention + "' )");
-
-            command = new SQLiteCommand(sql, curConnection);
-
-            command.ExecuteNonQuery();
+            //Send character creation menu
+            //await ctx.Client.GetInteractivityModule().SendPaginatedMessage(ctx.Client.CreateDmAsync(ctx.User), ctx.User,);
 
             //Create a new Entity
             Entity player = new Entity(ctx.Member.DisplayName, 2, 100, locations[0]);
@@ -147,23 +118,6 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
                     //If the current iterated location is equal to the specified one...
                     if (location == _location.name)
                     {
-                        //Look through every member...
-                        /*foreach (DiscordMember _member in users.Keys)
-                        {
-                            //If the current iterated member is equal to the one that initiated the command...
-                            if(_member == ctx.Member)
-                            {
-                                //Changed the users location to the specified one.
-                                users[_member].location = _location;
-                                
-                                //Inform the user that their avatar was moved to another location
-                                await ctx.RespondAsync($"{ctx.User.Mention}'s avatar was moved to `{_location.name}`");
-                                
-                                //break since the loop no longer needs to continue
-                                break;
-                            }
-                        }*/
-                        
                         //Changed the users location to the specified one.
                         users[ctx.Member].location = _location;
                         
@@ -234,11 +188,11 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
                 await ctx.RespondAsync($"\n`{locations[i].name}`");
             }
         }
-        
+
+        //**NOTE** This command is subject to a lot of change
         //**ATTACK**
         //Command : rpgAttack
-        //This command is subject to a lot of change
-        //Used to attack entities in a location
+        //Used to attack specified entities in the players current location
         [Command(commandPrefix + "Attack"), Aliases("attack", "fight", "hit", "Fight", "Hit")]
         public async Task Attack(CommandContext ctx, string name)
         {
@@ -255,18 +209,46 @@ namespace Discord.DiscordBots.ZuccBot.Games.GenericRPG
                             {
                                 if (_entity.name == name)
                                 {
+                                    //**PLAYER OFFENDER, ENTITY DEFENDER**
+                                    //Alert that displays an offending party and defending party.
                                     await ctx.RespondAsync($"{ctx.User.Mention} is attacking `{_entity.name}` in `{users[ctx.Member].location.name}`.");
                                     await ctx.TriggerTypingAsync();
+
+                                    //Reduce the defending party's health value by the offending party's damage value
                                     _entity.health -= users[ctx.Member].damage;
+
                                     if (_entity.health <= 0)
                                     {
+                                        //Alert that the offending party has slain the defending party.
                                         await ctx.RespondAsync($"{ctx.User.Mention} has killed `{_entity.name}` at `{users[ctx.Member].location.name}`.");
                                         _location.entities.Remove(_entity);
                                         break;
                                     }
                                     else
                                     {
+                                        //Alert that the offending party has struck the defending party.
                                         await ctx.RespondAsync($"{ctx.User.Mention} has attacked `{_entity.name}` for `{users[ctx.Member].damage}` damage at `{users[ctx.Member].location.name}`.");
+                                    }
+
+                                    //**ENTITY OFFENDER, PLAYER DEFENDER**
+
+                                    //Alert that an entity is attacking the member who initiated the command at a location
+                                    await ctx.RespondAsync($"`{_entity.name}` is attacking {ctx.Member.Mention} in `{users[ctx.Member].location.name}`.");
+                                    await ctx.TriggerTypingAsync();
+
+                                    //Reduce the defending party's health value by the offending party's damage value
+                                    users[ctx.Member].health -= _entity.damage;
+
+                                    //if statement to check for death or just health reduction
+                                    if (users[ctx.Member].health <= 0)
+                                    {
+                                        //Alert that the offending party has slain the defending party.
+                                        await ctx.RespondAsync($"`{_entity.name}` has killed {ctx.Member.Mention} at `{users[ctx.Member].location.name}`.");
+                                    }
+                                    else
+                                    {
+                                        //Alert that the offending party has struck the defending party.
+                                        await ctx.RespondAsync($"`{_entity.name}` has attacked {ctx.Member.Mention} for `{_entity.damage}` damage at `{users[ctx.Member].location.name}`.");
                                     }
                                 }
                             }
