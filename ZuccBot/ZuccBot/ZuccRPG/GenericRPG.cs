@@ -8,11 +8,13 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Entities;
 using System.Linq;
 using ZuccBot.ZuccRPG.Generic;
+using System.Collections;
+using DSharpPlus.Net;
 //using System.Data.SQLite;
 
 namespace ZuccBot.ZuccRPG
 {
-    public class GenericRPG
+    public class GenericRPG : IEnumerable
     {
         //***NOTE*** Games are server based so your characters can not interact with games on other servers and can not be carried over to other servers.
 
@@ -78,6 +80,23 @@ namespace ZuccBot.ZuccRPG
 
             //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
             await ctx.TriggerTypingAsync();
+
+
+            /*DescriptionAttribute description = new DescriptionAttribute("description");
+            DiscordEmbedAuthor author = new DiscordEmbedAuthor(ctx.User, ctx.User.AvatarUrl);
+
+            DiscordEmbed embed = new DiscordEmbed(DiscordColor.Blue, );
+
+            Page races = new Page();
+            races.Content = "content";
+
+            IEnumerable<Page> pages = new Page[]{ races };*/
+
+            var eb = new DiscordEmbedBuilder() { Title = "Cool Title", Description = "Description" };
+
+            await ctx.Channel.SendMessageAsync("", false, eb);
+
+            //await ctx.Client.GetInteractivityModule().SendPaginatedMessage(ctx.Channel, ctx.User, pages, null, null);
 
             //Send character creation menu
             //await ctx.Client.GetInteractivityModule().SendPaginatedMessage(ctx.Client.CreateDmAsync(ctx.User), ctx.User,);
@@ -265,6 +284,11 @@ namespace ZuccBot.ZuccRPG
                 //As of now (March 12 2019), I'm not sure why this would be thrown as I have never had it happen, and there's nothing (I know of) that could cause it. If you do get this exception, Good Luck!
                 await ctx.RespondAsync($"An unknown error has occurred.");
             }
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
         }
     }
 }
