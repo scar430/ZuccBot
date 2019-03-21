@@ -10,6 +10,7 @@ using System.Linq;
 using ZuccBot.ZuccRPG.Generic;
 using System.Collections;
 using DSharpPlus.Net;
+using ZuccBot.UI;
 //using System.Data.SQLite;
 
 namespace ZuccBot.ZuccRPG
@@ -81,30 +82,18 @@ namespace ZuccBot.ZuccRPG
             //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
             await ctx.TriggerTypingAsync();
 
+            var embed = new DiscordEmbedBuilder() { Title = "**Race**", Description = "*Choose a race for your character.*", };
 
-            /*DescriptionAttribute description = new DescriptionAttribute("description");
-            DiscordEmbedAuthor author = new DiscordEmbedAuthor(ctx.User, ctx.User.AvatarUrl);
+            embed.AddField(":man: *Human*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+            embed.AddField(":leaves: *Elf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+            embed.AddField(":pick: *Dwarf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
 
-            DiscordEmbed embed = new DiscordEmbed(DiscordColor.Blue, );
+            var paginatedMessage = await ctx.Channel.SendMessageAsync("", false, embed);
+            await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
+            await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
+            await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
 
-            Page races = new Page();
-            races.Content = "content";
-
-            IEnumerable<Page> pages = new Page[]{ races };*/
-
-            var eb = new DiscordEmbedBuilder() { Title = "Cool Title", Description = "Description" };
-
-            await ctx.Channel.SendMessageAsync("", false, eb);
-
-            //await ctx.Client.GetInteractivityModule().SendPaginatedMessage(ctx.Channel, ctx.User, pages, null, null);
-
-            //Send character creation menu
-            //await ctx.Client.GetInteractivityModule().SendPaginatedMessage(ctx.Client.CreateDmAsync(ctx.User), ctx.User,);
-
-            //Create a new Entity
-            Entity player = new Entity(ctx.Member.DisplayName, 2, 100, locations[0]);
-            users.Add(ctx.Member, player);//Pair this entity with the member who initiated the command into the dicitionary "users"
-            await ctx.RespondAsync($"Finished creating a character for {ctx.User.Mention}! \nHappy trails, partner!");//Let's the user know the process is over and was completed successfully and is also a reference :)
+            PaginatedEmbed paginatedEmbed = new PaginatedEmbed("Character Creation", "Select the emojis to make your choice.", ctx, null, ctx.Message);
         }
 
         //**LIST PLAYERS**
