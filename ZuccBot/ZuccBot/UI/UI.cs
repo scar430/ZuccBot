@@ -19,12 +19,13 @@ namespace ZuccBot.UI
         public DiscordEmbed embed;
         public CommandContext ctx;
         public DiscordMessage message;
-        public Dictionary<string, DiscordEmoji> selections;
+        public DiscordEmoji[] selections;
 
-        public PaginatedEmbed(string title, string description, CommandContext _ctx, IEnumerable<EmbedPage> _pages, DiscordMessage _message)
+        public PaginatedEmbed(string title, string description, CommandContext _ctx, DiscordEmoji[] _selections, IEnumerable<EmbedPage> _pages, DiscordMessage _message)
         {
             embed = new DiscordEmbedBuilder() { Title = title, Description = description };
             ctx = _ctx;
+            selections = _selections;
             pages = _pages;//In most cases you can parse in null, in other cases your probably copying pages over.
             message = _message;
         }

@@ -84,16 +84,39 @@ namespace ZuccBot.ZuccRPG
 
             var embed = new DiscordEmbedBuilder() { Title = "**Race**", Description = "*Choose a race for your character.*", };
 
-            embed.AddField(":man: *Human*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
-            embed.AddField(":leaves: *Elf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
-            embed.AddField(":pick: *Dwarf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+            DiscordEmoji[] selections = new DiscordEmoji[] { DiscordEmoji.FromName(ctx.Client, ":man:"), DiscordEmoji.FromName(ctx.Client, ":leaves:"), DiscordEmoji.FromName(ctx.Client, ":pick:") };
 
-            var paginatedMessage = await ctx.Channel.SendMessageAsync("", false, embed);
+            PaginatedEmbed paginatedEmbed = new PaginatedEmbed("Character Creation", "Select the emojis to make your choice.", ctx, selections, null, ctx.Message);
+
+            //This should be added to the paginated embeds enumerable of reactions
+            //embed.AddField(":man: *Human*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+            //embed.AddField(":leaves: *Elf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+            //embed.AddField(":pick: *Dwarf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+
+            var paginatedMessage = await ctx.Channel.SendMessageAsync("", false, paginatedEmbed.embed);
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
 
-            PaginatedEmbed paginatedEmbed = new PaginatedEmbed("Character Creation", "Select the emojis to make your choice.", ctx, null, ctx.Message);
+            try
+            {
+                for (int i = 0; i < (paginatedEmbed.selections.Length - 1); i++)
+                {
+                    if (paginatedMessage.Reactions.ElementAt<DiscordReaction>(i).IsMe)
+                    {
+                        await ctx.RespondAsync($"Test");
+                    }
+                    else
+                    if (i == (paginatedEmbed.selections.Length - 1) && paginatedMessage.Reactions.Count == paginatedEmbed.selections.Length)
+                    {
+                        await Task.Delay(100);
+                    }
+                }
+            }
+            catch
+            {
+                await ctx.RespondAsync($"Failed to read answer");
+            }
         }
 
         //**LIST PLAYERS**
