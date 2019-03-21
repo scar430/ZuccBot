@@ -3,6 +3,11 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using ZuccBot.ZuccRPG;
+using DSharpPlus.EventArgs;
+using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 
 namespace ZuccBot
 {
@@ -20,6 +25,7 @@ namespace ZuccBot
 
         static async Task MainAsync(string[] args)
         {
+
             Console.WriteLine("Started MainAsync(string[] args)...");
             discord = new DiscordClient(new DiscordConfiguration
             {
@@ -34,12 +40,29 @@ namespace ZuccBot
                 StringPrefix = ">"
             });
 
+            discord.MessageReactionAdded += Discord_ReactionAdded;
             commands.RegisterCommands<Commands>();
             commands.RegisterCommands<GenericRPG>();
+            
 
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
-            await Task.Delay(-1);//Wait infinitely. Bot purgatory.
+            await Task.Delay(-1);//Wait infinitely. Bot purgatory. >:)
             Console.WriteLine("Ended MainAsync(string[] args)");
+        }
+
+        private static Task Discord_ReactionAdded(MessageReactionAddEventArgs e)
+        {
+            if(e.Message.Author.IsCurrent == e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot && e.Emoji == DiscordEmoji.FromName((DiscordClient)e.Client, ":man:"))
+            {
+                Console.WriteLine("Message Recieved");
+                
+                return Task.CompletedTask;
+            }
+            else
+            {
+                Console.WriteLine("Message Delayed");
+                return Task.Delay(25);
+            }
         }
     }
 }

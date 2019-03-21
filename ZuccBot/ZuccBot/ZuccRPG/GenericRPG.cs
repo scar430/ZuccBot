@@ -15,11 +15,12 @@ using ZuccBot.UI;
 
 namespace ZuccBot.ZuccRPG
 {
-    public class GenericRPG : IEnumerable
-    {
-        //***NOTE*** Games are server based so your characters can not interact with games on other servers and can not be carried over to other servers.
 
+    public class GenericRPG
+    {
         const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg 
+
+        internal static ulong messageTrack { get; set; }
 
         List<Location> locations = new List<Location>();//All the locations in this world.
         List<Race> races = new List<Race>();//All the availible races
@@ -82,41 +83,22 @@ namespace ZuccBot.ZuccRPG
             //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
             await ctx.TriggerTypingAsync();
 
-            var embed = new DiscordEmbedBuilder() { Title = "**Race**", Description = "*Choose a race for your character.*", };
+            var embed = new DiscordEmbedBuilder() { Title = "**Race**", Description = "*Choose a race for your character.*", Color = DiscordColor.Gold};
 
-            DiscordEmoji[] selections = new DiscordEmoji[] { DiscordEmoji.FromName(ctx.Client, ":man:"), DiscordEmoji.FromName(ctx.Client, ":leaves:"), DiscordEmoji.FromName(ctx.Client, ":pick:") };
+            //DiscordEmoji[] selections = new DiscordEmoji[] { DiscordEmoji.FromName(ctx.Client, ":man:"), DiscordEmoji.FromName(ctx.Client, ":leaves:"), DiscordEmoji.FromName(ctx.Client, ":pick:") };
 
-            PaginatedEmbed paginatedEmbed = new PaginatedEmbed("Character Creation", "Select the emojis to make your choice.", ctx, selections, null, ctx.Message);
+            //PaginatedEmbed paginatedEmbed = new PaginatedEmbed("Character Creation", "Select the emojis to make your choice.", ctx, selections, null, ctx.Message);
 
             //This should be added to the paginated embeds enumerable of reactions
-            //embed.AddField(":man: *Human*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
-            //embed.AddField(":leaves: *Elf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
-            //embed.AddField(":pick: *Dwarf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+            embed.AddField(":man: *Human*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+            embed.AddField(":leaves: *Elf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
+            embed.AddField(":pick: *Dwarf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
 
-            var paginatedMessage = await ctx.Channel.SendMessageAsync("", false, paginatedEmbed.embed);
+            
+            var paginatedMessage = await ctx.Channel.SendMessageAsync("", false, embed);
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
-
-            try
-            {
-                for (int i = 0; i < (paginatedEmbed.selections.Length - 1); i++)
-                {
-                    if (paginatedMessage.Reactions.ElementAt<DiscordReaction>(i).IsMe)
-                    {
-                        await ctx.RespondAsync($"Test");
-                    }
-                    else
-                    if (i == (paginatedEmbed.selections.Length - 1) && paginatedMessage.Reactions.Count == paginatedEmbed.selections.Length)
-                    {
-                        await Task.Delay(100);
-                    }
-                }
-            }
-            catch
-            {
-                await ctx.RespondAsync($"Failed to read answer");
-            }
         }
 
         //**LIST PLAYERS**
