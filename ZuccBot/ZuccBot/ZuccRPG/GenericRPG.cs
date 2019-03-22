@@ -11,6 +11,10 @@ using ZuccBot.ZuccRPG.Generic;
 using System.Collections;
 using DSharpPlus.Net;
 using ZuccBot.UI;
+using Newtonsoft.Json;
+using System.IO;
+using Newtonsoft.Json.Linq;
+using ZuccBot;
 //using System.Data.SQLite;
 
 namespace ZuccBot.ZuccRPG
@@ -82,7 +86,7 @@ namespace ZuccBot.ZuccRPG
 
             //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
             await ctx.TriggerTypingAsync();
-
+            /*
             var embed = new DiscordEmbedBuilder() { Title = "**Race**", Description = "*Choose a race for your character.*", Color = DiscordColor.Gold};
 
             //DiscordEmoji[] selections = new DiscordEmoji[] { DiscordEmoji.FromName(ctx.Client, ":man:"), DiscordEmoji.FromName(ctx.Client, ":leaves:"), DiscordEmoji.FromName(ctx.Client, ":pick:") };
@@ -99,6 +103,13 @@ namespace ZuccBot.ZuccRPG
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
             await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
+            */
+
+            var json = @"{""color"":6591981,""title"":""Race"",""description"":""Select a race."",""fields"":[{""name"":"":man: *Human * "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet."",""inline"":false},{""name"":"":leaves: *Elf * "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false},{""name"":"":pick: *Dwarf * "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false}]}";
+
+            var embed = JsonConvert.DeserializeObject<DiscordEmbed>(json);
+
+            await ctx.Channel.SendMessageAsync($"", false, embed);
         }
 
         //**LIST PLAYERS**
@@ -278,11 +289,6 @@ namespace ZuccBot.ZuccRPG
                 //As of now (March 12 2019), I'm not sure why this would be thrown as I have never had it happen, and there's nothing (I know of) that could cause it. If you do get this exception, Good Luck!
                 await ctx.RespondAsync($"An unknown error has occurred.");
             }
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            throw new NotImplementedException();
         }
     }
 }

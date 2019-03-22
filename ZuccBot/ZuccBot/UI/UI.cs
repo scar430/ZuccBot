@@ -10,24 +10,20 @@ using System.Linq;
 using ZuccBot.ZuccRPG.Generic;
 using System.Collections;
 using DSharpPlus.Net;
+using ZuccBot.UI;
 
 namespace ZuccBot.UI
 {
     public class PaginatedEmbed
     {
         public IEnumerable<EmbedPage> pages;
-        public DiscordEmbed embed;
-        public CommandContext ctx;
         public DiscordMessage message;
         public DiscordEmoji[] selections;
 
-        public PaginatedEmbed(string title, string description, CommandContext _ctx, DiscordEmoji[] _selections, IEnumerable<EmbedPage> _pages, DiscordMessage _message)
+        public PaginatedEmbed(string title, string description, DiscordEmoji[] _selections, IEnumerable<EmbedPage> _pages)
         {
-            embed = new DiscordEmbedBuilder() { Title = title, Description = description };
-            ctx = _ctx;
             selections = _selections;
             pages = _pages;//In most cases you can parse in null, in other cases your probably copying pages over.
-            message = _message;
         }
 
         public bool GetSelect(DiscordEmoji emoji)
@@ -43,24 +39,25 @@ namespace ZuccBot.UI
         }
     }
 
+    //Associating elements with an embed (this can probably be done with a dictionary however I'm keeping it in case I need to add anything to it.)
     public class EmbedPage
     {
-        DiscordEmbed embed;
-        PageElement[] elements;
+        public DiscordEmbed embed;
+        public PageElement[] elements;
 
-        EmbedPage(DiscordEmbed _embed)
+        public EmbedPage(DiscordEmbed _embed, PageElement[] _elements)
         {
             embed = _embed;
+            elements = _elements;
         }
     }
 
     public class PageElement
     {
-        EmbedPage embedPage;
-        string header;
-        string[] content;
+        public string header;
+        public string content;
 
-        PageElement(string _header, string[] _content)
+        public PageElement(string _header, string _content)
         {
             header = _header;
             content = _content;
