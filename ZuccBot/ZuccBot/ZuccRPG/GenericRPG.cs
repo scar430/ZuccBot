@@ -86,30 +86,15 @@ namespace ZuccBot.ZuccRPG
 
             //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
             await ctx.TriggerTypingAsync();
-            /*
-            var embed = new DiscordEmbedBuilder() { Title = "**Race**", Description = "*Choose a race for your character.*", Color = DiscordColor.Gold};
 
-            //DiscordEmoji[] selections = new DiscordEmoji[] { DiscordEmoji.FromName(ctx.Client, ":man:"), DiscordEmoji.FromName(ctx.Client, ":leaves:"), DiscordEmoji.FromName(ctx.Client, ":pick:") };
-
-            //PaginatedEmbed paginatedEmbed = new PaginatedEmbed("Character Creation", "Select the emojis to make your choice.", ctx, selections, null, ctx.Message);
-
-            //This should be added to the paginated embeds enumerable of reactions
-            embed.AddField(":man: *Human*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
-            embed.AddField(":leaves: *Elf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
-            embed.AddField(":pick: *Dwarf*", "Test Description\n **Ability Score:** This isn't implemented yet.", false);
-
-            
-            var paginatedMessage = await ctx.Channel.SendMessageAsync("", false, embed);
-            await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
-            await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
-            await paginatedMessage.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
-            */
-
-            var json = @"{""color"":6591981,""title"":""Race"",""description"":""Select a race."",""fields"":[{""name"":"":man: *Human * "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet."",""inline"":false},{""name"":"":leaves: *Elf * "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false},{""name"":"":pick: *Dwarf * "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false}]}";
+            var json = @"{""color"":6591981,""title"":""Race"",""description"":""Select a race."",""fields"":[{""name"":"":man: *Human* "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet."",""inline"":false},{""name"":"":leaves: *Elf*"",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false},{""name"":"":pick: *Dwarf* "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false}]}";
 
             var embed = JsonConvert.DeserializeObject<DiscordEmbed>(json);
 
-            await ctx.Channel.SendMessageAsync($"", false, embed);
+            var msg = await ctx.Channel.SendMessageAsync($"", false, embed);
+            await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
+            await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
+            await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
         }
 
         //**LIST PLAYERS**
