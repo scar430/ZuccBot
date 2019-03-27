@@ -27,8 +27,6 @@ namespace ZuccBot.ZuccRPG
 
         internal static ulong messageTrack { get; set; }
 
-        const { "Race", }
-
         List<Location> locations = new List<Location>();//All the locations in this world.
         List<Race> races = new List<Race>();//All the availible races
 
