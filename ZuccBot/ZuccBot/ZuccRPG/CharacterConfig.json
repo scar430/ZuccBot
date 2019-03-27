@@ -1,0 +1,26 @@
+{
+  "Race": [
+    {
+      "color": 6591981,
+      "title": "Race",
+      "description": "Select a race.",
+      "fields": [
+        {
+          "name": ":man: __Human__",
+          "value": "Example Description\nAbility Score: This is __not__ implemented yet.",
+          "inline": false
+        },
+        {
+          "name": ":leaves: __Elf__",
+          "value": "Example Description\nAbility Score: This is __not__ implemented yet",
+          "inline": false
+        },
+        {
+          "name": ":pick: __Dwarf__",
+          "value": "Example Description\nAbility Score: This is __not__ implemented yet",
+          "inline": false
+        }
+      ]
+    }
+  ]
+}

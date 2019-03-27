@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using ZuccBot;
+using System.Runtime.Serialization.Json;
 //using System.Data.SQLite;
 
 namespace ZuccBot.ZuccRPG
@@ -25,6 +26,8 @@ namespace ZuccBot.ZuccRPG
         const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg 
 
         internal static ulong messageTrack { get; set; }
+
+        const { "Race", }
 
         List<Location> locations = new List<Location>();//All the locations in this world.
         List<Race> races = new List<Race>();//All the availible races
@@ -87,14 +90,43 @@ namespace ZuccBot.ZuccRPG
             //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
             await ctx.TriggerTypingAsync();
 
-            var json = @"{""color"":6591981,""title"":""Race"",""description"":""Select a race."",""fields"":[{""name"":"":man: *Human* "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet."",""inline"":false},{""name"":"":leaves: *Elf*"",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false},{""name"":"":pick: *Dwarf* "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false}]}";
+            //var json = @"{""title"":""Race"",""description"":""Select a race."",""fields"":[{""name"":"":man: *Human* "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet."",""inline"":false},{""name"":"":leaves: *Elf*"",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false},{""name"":"":pick: *Dwarf* "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false}]}";
 
-            var embed = JsonConvert.DeserializeObject<DiscordEmbed>(json);
+            //var embed = JsonConvert.DeserializeObject<DiscordEmbed>(json);
 
-            var msg = await ctx.Channel.SendMessageAsync($"", false, embed);
-            await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
-            await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
-            await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
+            DiscordEmbedBuilder embed = JsonConvert.DeserializeObject<DiscordEmbedBuilder>(File.ReadAllText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.json"));
+            Console.WriteLine(embed.ToString());
+            await ctx.Channel.SendMessageAsync($"", false, embed);
+
+            /*using (StreamReader r = File.OpenText("C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.json"))
+            {
+                Console.WriteLine(0);
+                JsonSerializer serializer = new JsonSerializer();
+                Console.WriteLine(1);
+                var temp = (DiscordEmbedBuilder)serializer.Deserialize(r, typeof(DiscordEmbedBuilder));
+                var embed = new DiscordEmbedBuilder();
+                Console.WriteLine(2);
+                Console.WriteLine(temp.ToString());
+                JsonConvert.PopulateObject(temp.ToString(), embed);
+                Console.WriteLine(3);
+                await ctx.Channel.SendMessageAsync($"", false, embed);
+            }*/
+
+            /*string filepath = "C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.json";
+            string result = string.Empty;
+            using (StreamReader r = new StreamReader(filepath))
+            {
+                var json = r.ReadToEnd();
+                var jobj = JObject.Parse(json);
+                result = jobj.ToString();
+                Console.WriteLine(result);
+            }*/
+            //var oMycustomclassname = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(filepath);
+
+            //var msg = await ctx.Channel.SendMessageAsync($"", false, embed);
+            //await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
+            //await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
+            //await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
         }
 
         //**LIST PLAYERS**
