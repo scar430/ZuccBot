@@ -10,22 +10,33 @@ using System.Linq;
 using ZuccBot.ZuccRPG.Generic;
 using System.Collections;
 using DSharpPlus.Net;
-using ZuccBot.UI;
 using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using ZuccBot;
 using System.Runtime.Serialization.Json;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Converters;
 //using System.Data.SQLite;
 
 namespace ZuccBot.ZuccRPG
 {
 
+    public class test
+    {
+        public int num;
+        public string name;
+
+        public test(int _num, string _name)
+        {
+            num = _num;
+            name = _name;
+        }
+    }
+
     public class GenericRPG
     {
-        const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg 
-
-        internal static ulong messageTrack { get; set; }
+        const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg
 
         List<Location> locations = new List<Location>();//All the locations in this world.
         List<Race> races = new List<Race>();//All the availible races
@@ -88,43 +99,32 @@ namespace ZuccBot.ZuccRPG
             //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
             await ctx.TriggerTypingAsync();
 
-            //var json = @"{""title"":""Race"",""description"":""Select a race."",""fields"":[{""name"":"":man: *Human* "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet."",""inline"":false},{""name"":"":leaves: *Elf*"",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false},{""name"":"":pick: *Dwarf* "",""value"":""Example Description\nAbility Score: This is __not__ implemented yet"",""inline"":false}]}";
-
-            //var embed = JsonConvert.DeserializeObject<DiscordEmbed>(json);
-
-            DiscordEmbedBuilder embed = JsonConvert.DeserializeObject<DiscordEmbedBuilder>(File.ReadAllText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.json"));
-            Console.WriteLine(embed.ToString());
-            await ctx.Channel.SendMessageAsync($"", false, embed);
-
-            /*using (StreamReader r = File.OpenText("C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.json"))
+            // serialize JSON directly to a file
+            /*using (StreamWriter file = File.CreateText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
             {
-                Console.WriteLine(0);
+                var embed = new DiscordEmbedBuilder() { Title = "Race", Description = "Select the reaction the corresponds with the Emoji associated with your desired selection.", Color = DiscordColor.CornflowerBlue };
+                embed.AddField(":man: __Human__", "Example Description\nAbility Score: This is __not__ implemented yet.");
+                embed.AddField(":leaves: __Elf__", "Example Description\nAbility Score: This is __not__ implemented yet.");
+                embed.AddField(":pick: __Dwarf__", "Example Description\nAbility Score: This is __not__ implemented yet.");
+
+                List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
+                embeds.Add(embed);
+
                 JsonSerializer serializer = new JsonSerializer();
-                Console.WriteLine(1);
-                var temp = (DiscordEmbedBuilder)serializer.Deserialize(r, typeof(DiscordEmbedBuilder));
-                var embed = new DiscordEmbedBuilder();
-                Console.WriteLine(2);
-                Console.WriteLine(temp.ToString());
-                JsonConvert.PopulateObject(temp.ToString(), embed);
-                Console.WriteLine(3);
-                await ctx.Channel.SendMessageAsync($"", false, embed);
+                serializer.Serialize(file, embeds);
             }*/
 
-            /*string filepath = "C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.json";
-            string result = string.Empty;
-            using (StreamReader r = new StreamReader(filepath))
+            using (StreamReader file = File.OpenText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
             {
-                var json = r.ReadToEnd();
-                var jobj = JObject.Parse(json);
-                result = jobj.ToString();
-                Console.WriteLine(result);
-            }*/
-            //var oMycustomclassname = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(filepath);
-
-            //var msg = await ctx.Channel.SendMessageAsync($"", false, embed);
-            //await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
-            //await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
-            //await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
+                ITraceWriter tcr = new MemoryTraceWriter();
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+                Console.WriteLine(tcr);
+                List<DiscordEmbed> embed = (List<DiscordEmbed>)serializer.Deserialize(file, typeof(List<DiscordEmbed>));
+                var msg = await ctx.Channel.SendMessageAsync($"", false, embed[0]);
+                await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
+                await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
+                await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
+            }
         }
 
         //**LIST PLAYERS**

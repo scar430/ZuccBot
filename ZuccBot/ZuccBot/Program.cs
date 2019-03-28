@@ -44,7 +44,7 @@ namespace ZuccBot
 
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefix = ">"
+                StringPrefix = "."
             });
 
             discord.MessageReactionAdded += Discord_ReactionAdded;
