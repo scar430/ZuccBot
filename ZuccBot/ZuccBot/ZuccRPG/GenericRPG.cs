@@ -17,88 +17,24 @@ using ZuccBot;
 using System.Runtime.Serialization.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
-//using System.Data.SQLite;
 
 namespace ZuccBot.ZuccRPG
 {
-
-    public class test
-    {
-        public int num;
-        public string name;
-
-        public test(int _num, string _name)
-        {
-            num = _num;
-            name = _name;
-        }
-    }
-
     public class GenericRPG
     {
-        const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg
+        const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg, this helps stop command clutter
 
+        //These two lists may be temporary
         List<Location> locations = new List<Location>();//All the locations in this world.
-        List<Race> races = new List<Race>();//All the availible races
 
         Dictionary<DiscordMember, Entity> users = new Dictionary<DiscordMember, Entity>();//Dictionary<Key, Value> (It's basically a HashMap from Java) that is used to pair up Discord Users with their character
-
-        //**START** initialize the world.
-        //Command : rpgCreateWorld
-        //Current way to create worlds, this was made to take parameters however I haven't added them yet and may change this to start on startup
-        [Command(commandPrefix + "CreateWorld"), Aliases(commandPrefix + "StartWorld", commandPrefix + "startworld", commandPrefix + "start"), RequirePermissions(Permissions.Administrator), Hidden]
-        public async Task CreateWorld(CommandContext ctx)
-        {
-            //***PROCESS STARTED***
-            //Tell the user that the world is being created, good for understanding what is currently happening and if the world has even begun generating
-            await ctx.RespondAsync($"Started to create a new world...");
-
-            //Typing indicator, indicates to the user that the bot is getting the job done, good for telling if the Bot ran into an error mid-process.
-            await ctx.TriggerTypingAsync();
-            
-            //***LOCATION CREATION CODE***
-            //This may be removed in future versions.
-            
-            //TAVERN CODE
-            //Create a new location named "Tavern" and add it to the list of accessible locations.
-            Location tavern = new Location("Tavern", null, null);//create "Tavern".
-            locations.Add(tavern);//Add "Tavern" to the list of accessible locations.
-            
-            //MINE CODE
-            //Create a new location named "Mine" and add it to the list of accessible locations.
-            Location mine = new Location("Mine", null, null);//Create "Mine".
-            locations.Add(mine);//Add "Mine" to the list of accessible locations.
-
-            //PAWNSHOP CODE
-            //Create a new location named "PawnShop" and add it to the list of accessible locations
-            Location pawnShop = new Location("PawnShop", null, null);//Create "PawnShop"
-            locations.Add(pawnShop);//Add "PawnShop" to the list of accessible locations
-
-            //DUNGEON CODE
-            //Create a location named "Dungeon", populate it with a Goblin and add it to the list of accessible locations
-            Entity goblin = new Entity("Goblin", 1, 5, locations[locations.Count - 1]);//Create a Goblin
-            List<Entity> dungeonEntities = new List<Entity>();//Create a list of Entities
-            dungeonEntities.Add(goblin);//Populate the list we just created with the Goblin
-            Location dungeon = new Location("Dungeon", dungeonEntities, null);//Create a new location named "Dungeon" and parse in the list of entities we want in it
-            locations.Add(dungeon);//Add the "Dungeon" to the list of accessible locations
-            
-            //***PROCESS FINISHED***
-            //Tell the user that the process has been finished and they are free to play the game
-            await ctx.RespondAsync($"Created a new world to explore!");
-        }
 
         //**Create Character**
         //Command : rpgCreateCharacter
         //This function is subject to a lot of change.
-        [Command(commandPrefix + "CreateCharacter")]
+        [Command(commandPrefix + "CreateCharacter"), Aliases(commandPrefix + "cc", commandPrefix + "createCharacter", commandPrefix + "createcharacter", commandPrefix + "newcharacter", commandPrefix + "newchar", commandPrefix + "newCharacter", commandPrefix + "createchar")]
         public async Task CreateCharacter(CommandContext ctx)
         {
-            //Tell the user the proccess has begun.
-            await ctx.RespondAsync($"Started creating a character for {ctx.User.Mention}...");
-
-            //This let's us know if the Bot ran into problems during the function (The Bot will stop typing and nothing will happen.)
-            await ctx.TriggerTypingAsync();
-
             // serialize JSON directly to a file
             /*using (StreamWriter file = File.CreateText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
             {
@@ -114,11 +50,19 @@ namespace ZuccBot.ZuccRPG
                 serializer.Serialize(file, embeds);
             }*/
 
+            //Read "CharacterConfig.txt"
             using (StreamReader file = File.OpenText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
             {
+                //More of a debug feature, jsut checks what your doing and can log what your accessing
                 ITraceWriter tcr = new MemoryTraceWriter();
+
+                //Is gonna use JSON magic on whatever we are targeting with the current file stream
                 JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                //print the memory tracer
                 Console.WriteLine(tcr);
+
+                //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
                 List<DiscordEmbed> embed = (List<DiscordEmbed>)serializer.Deserialize(file, typeof(List<DiscordEmbed>));
                 var msg = await ctx.Channel.SendMessageAsync($"", false, embed[0]);
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
@@ -127,13 +71,13 @@ namespace ZuccBot.ZuccRPG
             }
         }
 
+        //**NOTE** This WILL change
         //**LIST PLAYERS**
         //Command : rpgPlayers
         //Lists all of the players who are partaking in the rpg (list of players is limited to server.)
         [Command(commandPrefix + "Players")]
         public async Task Players(CommandContext ctx)
         {
-            
             //For every member who has created an avatar...
             foreach (DiscordMember _member in users.Keys)
             {
@@ -232,7 +176,7 @@ namespace ZuccBot.ZuccRPG
         //**ATTACK**
         //Command : rpgAttack
         //Used to attack specified entities in the players current location
-        [Command(commandPrefix + "Attack"), Aliases("attack", "fight", "hit", "Fight", "Hit")]
+        /*[Command(commandPrefix + "Attack"), Aliases("attack", "fight", "hit", "Fight", "Hit")]
         public async Task Attack(CommandContext ctx, string name)
         {
             //In case of exceptions...
@@ -254,7 +198,7 @@ namespace ZuccBot.ZuccRPG
                                     await ctx.TriggerTypingAsync();
 
                                     //Reduce the defending party's health value by the offending party's damage value
-                                    _entity.health -= users[ctx.Member].damage;
+                                    _entity. -= users[ctx.Member].damage;
 
                                     if (_entity.health <= 0)
                                     {
@@ -304,6 +248,6 @@ namespace ZuccBot.ZuccRPG
                 //As of now (March 12 2019), I'm not sure why this would be thrown as I have never had it happen, and there's nothing (I know of) that could cause it. If you do get this exception, Good Luck!
                 await ctx.RespondAsync($"An unknown error has occurred.");
             }
-        }
+        }*/
     }
 }
