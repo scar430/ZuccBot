@@ -166,10 +166,10 @@ namespace ZuccBot
 
                             }
                             //We're gonna flip the paginated embed to the next page
-                            var msg = e.Message.ModifyAsync($"", embed[2]);
+                            //var msg = e.Message.ModifyAsync($"", embed[2]);
 
                             //Change the reactions to the appropiate ones for the next page
-                            e.Message.DeleteAllReactionsAsync();
+                            e.Message.DeleteAsync();
                             //These emojis should correspond with the choices on the next page (page 2 or element 1)
                             /*e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":crossed_swords:"));
                             e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":bow_and_arrow:"));
