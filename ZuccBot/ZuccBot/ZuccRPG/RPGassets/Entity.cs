@@ -17,7 +17,7 @@ namespace ZuccBot.ZuccRPG.Generic
     public class CombatEntity : Entity
     {
         public int ac { get; set; }//Armor Class (d&d)
-        public int maxiumHP { get; set; }//Maximum Hit Points
+        public int maxiumHP { get; set; }//Maximum Hit Points. This is used to stop the player and other entities from using healing items constantly to MASSIVELY buff their health
         public int curHP { get; set; }//What the current Hit Point score is at, This can not exceed the maxiumHP integer and if it reaches 0 or lower then death will occur
 
         //Armor slots that can contian Items.
@@ -25,15 +25,11 @@ namespace ZuccBot.ZuccRPG.Generic
         public Item torsoSlot { get; set; }//Equip Items to the Torso.
         public Item legSlot { get; set; }//Equip Items to the Legs.
         public Item footSlot { get; set; }//Equip Items to the Feet.
-    }
 
-    //Creates more specifics from the Combat Entity class in order to comply with character customization
-    public class Player : CombatEntity
-    {
-        DiscordClient client { get; set; }//The client this player is associated with
-
+        //You can parse in null on non-player entities
         string profession { get; set; }//This is just the class but renamed since the class identifier is already claimed. (e.g. Bard, Wizard, Knight)
 
+        //This may not be supported
         string description { get; set; }//This is written by the player
 
         public int strength { get; set; }
