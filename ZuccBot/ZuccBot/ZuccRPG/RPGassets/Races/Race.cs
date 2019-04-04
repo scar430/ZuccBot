@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ZuccBot.ZuccRPG
+namespace Main.ZuccRPG
 {
     class Race
     {

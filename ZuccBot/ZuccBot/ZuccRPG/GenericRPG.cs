@@ -7,7 +7,6 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Entities;
 using System.Linq;
-using ZuccBot.ZuccRPG.Generic;
 using System.Collections;
 using DSharpPlus.Net;
 using Newtonsoft.Json;
@@ -17,6 +16,7 @@ using ZuccBot;
 using System.Runtime.Serialization.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
+using Main.ZuccRPG.RPGassets;
 
 namespace ZuccBot.ZuccRPG
 {
@@ -51,7 +51,7 @@ namespace ZuccBot.ZuccRPG
             }*/
 
             //Read "CharacterConfig.txt"
-            using (StreamReader file = File.OpenText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+            using (StreamReader file = File.OpenText(@"C:\\Users\\fir1.MY\\Desktop\\ProcessingProjects\\ProcessingGithub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
             {
                 //More of a debug feature, jsut checks what your doing and can log what your accessing
                 ITraceWriter tcr = new MemoryTraceWriter();

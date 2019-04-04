@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using DSharpPlus;
 
-namespace ZuccBot.ZuccRPG.Generic
+namespace Main.ZuccRPG.RPGassets
 {
     //Necessities for every entity type
     public class Entity

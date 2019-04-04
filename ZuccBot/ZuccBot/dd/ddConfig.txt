@@ -1,0 +1,1 @@
+{"chapters":{"Title":"Chapters","Description":"Select the reaction the corresponds with the Emoji associated with your desired selection.","Url":null,"Color":{"Value":6591981,"R":100,"G":149,"B":237},"Timestamp":null,"ImageUrl":null,"ThumbnailUrl":null,"Author":null,"Footer":null,"Fields":[{"name":":regional_indicator_k: Chapter 11","value":"Page 207","inline":false}]}}

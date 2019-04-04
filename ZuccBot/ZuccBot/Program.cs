@@ -8,7 +8,6 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Entities;
 using System.Linq;
-using ZuccBot.ZuccRPG.Generic;
 using System.Collections;
 using DSharpPlus.Net;
 using System.Collections.Generic;
@@ -16,7 +15,9 @@ using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using ZuccBot.DD;
 
+//**NOTE** .NET Core 2.0 is the recommended target framework. (I don't know how your opening this project)
 //**NOTE** There may or may not be a 'README.txt', please check, if 'README.txt' isn't in the main folder (folder that contains ZuccBot.sln) then ignore this.
 
 namespace ZuccBot
@@ -28,17 +29,15 @@ namespace ZuccBot
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Started Main(string[] args)...");
+            Console.WriteLine("ZuccBot is awake.");
+            Console.WriteLine(Directory.GetCurrentDirectory());
             //Rev this bad boy up (▀̿Ĺ̯▀̿ ̿)
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
-            Console.WriteLine("Ended Main(string[] args)");
         }
 
         //Setup the bot
         static async Task MainAsync(string[] args)
         {
-            Console.WriteLine("Started MainAsync(string[] args)...");
-
             //Create a new client instance (this is the bots 'id', I think this also helps seperate the bots client from any other local clients so that way it doesn't need to use another account as a proxy)
             discord = new DiscordClient(new DiscordConfiguration
             {
@@ -64,22 +63,22 @@ namespace ZuccBot
             //Command subscriptions
             commands.RegisterCommands<Commands>();//General commands (Utility: banning, kicking, etc.)
             commands.RegisterCommands<GenericRPG>();//RPG commands (Create characters, attack entities, etc.)
+            commands.RegisterCommands<ddCommands>();//D&D commands (Retrieve information etc.) Expect this to change.
 
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
             await Task.Delay(-1);//Wait infinitely. Bot purgatory. >:)
-            Console.WriteLine("Ended MainAsync(string[] args)");//It's all over!
         }
 
 
         //**NOTE** You can NOT serialize DiscordEmbedBuilders and cast them as DiscordEmbeds upon deserialization, you MUST serialize DiscordEmbeds as DiscordEmbeds, if you need to serialize a DiscordEmbed then construct it FIRST and then serialize, otherwise deserialization will NOT work.
 
+        //Most, if not, all of this code is related to paginated embeds as this is the event that's fire per each reaction
         //This might change in the future.
-        //Ethan helped me with this part, the main problem I was having was that the JsonSerializer wasn't created properly and I was serializing DiscordEmbedBuilders and trying to cast them as a generic var and then construct a DiscordEmbed with that. (You normally create DiscordEmbeds this way)
-        private static Task Discord_ReactionAdded(MessageReactionAddEventArgs e)
+        //Ethan helped me with this part, the main problem I was having was that objects weren't serializing to the JSON properly and I was serializing DiscordEmbedBuilders and trying to cast them as a generic var and then construct a DiscordEmbed with that. (You normally create DiscordEmbeds this way, however this was the exception)
+        private static async Task Discord_ReactionAdded(MessageReactionAddEventArgs e)
         {
-            //Big boi coming through...
             //This is gonna read the file thats being called (CharacterConfig.txt)
-            using (StreamReader file = File.OpenText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+            using (StreamReader file = File.OpenText(@"C:\\Users\\fir1.MY\\Desktop\\ProcessingProjects\\ProcessingGithub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
             {
                 //Hacking the Matrix... ̿̿ ̿̿ ̿̿ ̿'̿'\̵͇̿̿\з= ( ▀ ͜͞ʖ▀) =ε/̵͇̿̿/’̿’̿ ̿ ̿̿ ̿̿ ̿̿
 
@@ -124,23 +123,24 @@ namespace ZuccBot
                             var msg = e.Message.ModifyAsync($"", embed[1]);
 
                             //Change the reactions to the appropiate ones for the next page
-                            e.Message.DeleteAllReactionsAsync();
-                            //These emojis should correspond with the choices on the next page (page 2 or element 1)
-                            e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":crossed_swords:"));
-                            e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":bow_and_arrow:"));
-                            e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":dagger:"));
+                            await e.Message.DeleteAllReactionsAsync();
 
-                            //The task was completed successfully and no longer needs to be active
-                            return Task.CompletedTask;
+                            //These emojis should correspond with the choices on the next page (page 2 / element 1)
+                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":crossed_swords:"));
+                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":bow_and_arrow:"));
+                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":dagger:"));
+
+                            //The task was completed successfully and needs to be closed
+                            await Task.CompletedTask;
                         }
                         else
                         {
-                            return Task.Delay(100);
+                            await Task.Delay(100);
                         }
                     }
                     else
                     {
-                        return Task.Delay(100);
+                        await Task.Delay(100);
                     }
                 }
                 else
@@ -165,33 +165,33 @@ namespace ZuccBot
                             {
 
                             }
-                            //We're gonna flip the paginated embed to the next page
-                            //var msg = e.Message.ModifyAsync($"", embed[2]);
 
-                            //Change the reactions to the appropiate ones for the next page
-                            e.Message.DeleteAsync();
-                            //These emojis should correspond with the choices on the next page (page 2 or element 1)
-                            /*e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":crossed_swords:"));
-                            e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":bow_and_arrow:"));
-                            e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":dagger:"));*/
+                            //Were done with this message, delete it to clear clutter
+                            await e.Message.DeleteAsync();
 
                             //The task was completed successfully and no longer needs to be active
-                            return Task.CompletedTask;
+                            await Task.CompletedTask;
                         }
                         else
                         {
-                            return Task.Delay(100);
+                            await Task.Delay(100);
                         }
                     }
                     else
                     {
-                        return Task.Delay(100);
+                        await Task.Delay(100);
                     }
                 }
                 else
                 {
-                    return Task.Delay(100);
+                    await Task.Delay(100);
                 }
+            }
+
+            //D&D Information
+            using (StreamReader file = File.OpenText(@"C:\\Users\\fir1.MY\\Desktop\\ProcessingProjects\\ProcessingGithub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+            {
+
             }
         }
     }
