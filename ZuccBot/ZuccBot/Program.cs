@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using ZuccBot.DD;
+using ZuccBot.dd;
 
 //**NOTE** .NET Core 2.0 is the recommended target framework. (I don't know how your opening this project)
 //**NOTE** There may or may not be a 'README.txt', please check, if 'README.txt' isn't in the main folder (folder that contains ZuccBot.sln) then ignore this.
@@ -78,7 +78,8 @@ namespace ZuccBot
         private static async Task Discord_ReactionAdded(MessageReactionAddEventArgs e)
         {
             //This is gonna read the file thats being called (CharacterConfig.txt)
-            using (StreamReader file = File.OpenText(@"C:\\Users\\fir1.MY\\Desktop\\ProcessingProjects\\ProcessingGithub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+            //C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt
+            using (StreamReader file = File.OpenText("C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
             {
                 //Hacking the Matrix... ̿̿ ̿̿ ̿̿ ̿'̿'\̵͇̿̿\з= ( ▀ ͜͞ʖ▀) =ε/̵͇̿̿/’̿’̿ ̿ ̿̿ ̿̿ ̿̿
 
@@ -98,13 +99,9 @@ namespace ZuccBot
                 {
                     if (e.Message.Author.IsCurrent == e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot)
                     {
-                        /* The reason why theres an if statement to detect if any of the desired emojis have been selected 
-                             * and then creates individual if statements depending on the emoji is because there were actions that applied to all of the conditions, yet
-                             * some only applied to specific actions so I decided to just create a double if rather than create a serparate method for it.
-                             */
+                        //Switch statements couldn't work due to Discord Emojis being constant, among other things
                         if (e.Emoji == DiscordEmoji.FromName(discord, ":man:") || e.Emoji == DiscordEmoji.FromName(discord, ":leaves:") || e.Emoji == DiscordEmoji.FromName(discord, ":pick:"))
                         {
-                            Console.WriteLine("last");
                             if (e.Emoji == DiscordEmoji.FromName(discord, ":man:"))
                             {
 
@@ -189,9 +186,61 @@ namespace ZuccBot
             }
 
             //D&D Information
-            using (StreamReader file = File.OpenText(@"C:\\Users\\fir1.MY\\Desktop\\ProcessingProjects\\ProcessingGithub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+            //C:\\Users\\fir1.MY\\Desktop\\ProcessingProjects\\ProcessingGithub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt
+            using (StreamReader file = File.OpenText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\dd\\ddConfig.txt"))
             {
 
+                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current filestream
+                Console.WriteLine(tcr);
+
+                //List because theres multiple embeds and lists are easy to edit.
+                Dictionary<string, DiscordEmbed> embed = (Dictionary<string, DiscordEmbed>)serializer.Deserialize(file, typeof(Dictionary<string, DiscordEmbed>));
+
+                if (e.Message.Embeds[0].Title == embed["topics"].Title)
+                {
+                    if (e.Message.Author.IsCurrent == e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot)
+                    {
+                        //There were problems with constants and switch statements and emojis, that's why this extremely convulated if statement exists
+                        if (e.Emoji == DiscordEmoji.FromName(discord, ":one:") || e.Emoji == DiscordEmoji.FromName(discord, ":two:") || e.Emoji == DiscordEmoji.FromName(discord, ":three:"))
+                        {
+                            if (e.Emoji == DiscordEmoji.FromName(discord, ":one:"))
+                            {
+                                await e.Message.ModifyAsync($"", embed["charactercreation"]);
+                            }
+                            else
+                            if (e.Emoji == DiscordEmoji.FromName(discord, ":two:"))
+                            {
+
+                            }
+                            else
+                            if (e.Emoji == DiscordEmoji.FromName(discord, ":three:"))
+                            {
+
+                            }
+                            else
+                            {
+                                await Task.Delay(100);
+                            }
+
+                            await e.Message.DeleteAllReactionsAsync();
+
+                            await Task.CompletedTask;
+                        }
+                        else
+                        {
+                            await Task.Delay(100);
+                        }
+                    }
+                    else
+                    {
+                        await Task.Delay(100);
+                    }
+                }
+                else
+                {
+                    await Task.Delay(100);
+                }
             }
         }
     }

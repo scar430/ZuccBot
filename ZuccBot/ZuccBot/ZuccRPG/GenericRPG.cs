@@ -51,7 +51,8 @@ namespace ZuccBot.ZuccRPG
             }*/
 
             //Read "CharacterConfig.txt"
-            using (StreamReader file = File.OpenText(@"C:\\Users\\fir1.MY\\Desktop\\ProcessingProjects\\ProcessingGithub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+            //C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt
+            using (StreamReader file = File.OpenText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
             {
                 //More of a debug feature, jsut checks what your doing and can log what your accessing
                 ITraceWriter tcr = new MemoryTraceWriter();
