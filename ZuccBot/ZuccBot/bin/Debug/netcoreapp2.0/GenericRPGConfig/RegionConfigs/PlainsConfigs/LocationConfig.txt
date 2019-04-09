@@ -1,1 +1,0 @@
-{"inn":{"name":"Inn","region":1,"entities":[],"items":[],"levels":[{"name":"Bedrooms","region":1,"entities":[],"items":[]}]},"tavern":{"name":"Tavern","region":1,"entities":[],"items":[],"levels":[]}}

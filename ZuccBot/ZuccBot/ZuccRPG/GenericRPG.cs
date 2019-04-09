@@ -43,11 +43,33 @@ namespace ZuccBot.ZuccRPG
                 //Is gonna use JSON magic on whatever we are targeting with the current file stream
                 JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
 
-                
-
                 JsonConvert.SerializeObject(locations);
             }
-            
+
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\DropTableConfig.txt"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                Weapon club = new Weapon(Die.d4, EquipmentSkill.strength, "Crude Club");
+                Weapon dagger = new Weapon(Die.d4, EquipmentSkill.dextrious, "Rusty Dagger");
+                Weapon wand = new Weapon(Die.d4, EquipmentSkill.constitution, "Gnarly Wand");
+
+                Armor chestplate = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.strength, "Rusty Chest Plate");
+                Armor oldChestPlate = new Armor(Die.d6, ArmorType.torso, EquipmentSkill.strength, "Old Chest Plate");
+
+                //num = Chance * 100, if(RandomNumber > num){get loot}
+                Dictionary<float, Item> list = new Dictionary<float, Item>();
+                list.Add(0.90f, club);
+                list.Add(0.75f, dagger);
+                list.Add(0.50f, wand);
+                list.Add(0.25f, chestplate);
+                list.Add(0.15f, oldChestPlate);
+
+                serializer.Serialize(writer, locations);
+            }
 
             using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\LocationConfig.txt"))
             using (JsonWriter writer = new JsonTextWriter(sw))
@@ -60,19 +82,22 @@ namespace ZuccBot.ZuccRPG
                 List<Entity> entities = new List<Entity>();
                 List<Item> items = new List<Item>();
 
-                Location Bedrooms = new Location("Bedrooms", Region.Hills, null, entities, items);
+                Location Bedrooms = new Location("Bedrooms", Region.Hills, Population.Passive, null, entities, items);
                 IEnumerable<Location> innsLocations = new Location[] { Bedrooms };
-                Location Inn = new Location("Inn", Region.Hills, innsLocations, entities, items);
+                Location Inn = new Location("Inn", Region.Hills, Population.Passive, innsLocations, entities, items);
 
-                List<Entity> tentities = new List<Entity>() { };
-                Location Tavern = new Location("Tavern", Region.Hills, _locations, entities, items);
+                List<Entity> tentities = new List<Entity>(3) { };
+                Location Tavern = new Location("Tavern", Region.Hills, Population.Passive, _locations, entities, items);
+
+                List<Entity> centities = new List<Entity>(3) { };
+                Location Crypt = new Location("Crypt", Region.Hills, Population.Aggressive, _locations, entities, items);
 
                 Dictionary<string, Location> locations = new Dictionary<string, Location>();
                 locations.Add("inn", Inn);
                 locations.Add("tavern", Tavern);
+                locations.Add("crypt", Crypt);
 
                 serializer.Serialize(writer, locations);
-                // {"ExpiryDate":new Date(1230375600000),"Price":0}
             }
             return Task.CompletedTask;
             /*//Read "CharacterConfig.txt"

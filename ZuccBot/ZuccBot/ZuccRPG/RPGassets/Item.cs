@@ -6,7 +6,6 @@ namespace Main.ZuccRPG.RPGassets
 {
     public enum Die
     {
-        none,//Basically null
         d4,
         d6,
         d8,
@@ -14,21 +13,56 @@ namespace Main.ZuccRPG.RPGassets
         d12,
         d20
     }
+
+    public enum ArmorType
+    {
+        head,
+        torso,
+        leg,
+        foot
+    }
+
+    public enum EquipmentSkill
+    {
+        simple,
+        dextrious,
+        strength,
+        constitution
+    }
+
     public class Item
     {
         string name;//Used when the item is referenced in chat
 
-        //Parse in 0 if you don't want this to offer anything. (e.g. You don't want a potion to act as a sword, construct with 0)
-        Die die;//How many hit points does this deal when used as a weapon?
-
-        //Parse in 0 if you don't want this to offer anything. (e.g. You don't want a potion to act as a helmet, construct with 0)
-        int ac;//How many hit points does this protect from when equipped as armor
-
-        Item(string _name, Die _die, int _ac)
+        public Item(string _name)
         {
             name = _name;
+        }
+    }
+
+    public class Weapon : Item
+    {
+        Die die;
+        EquipmentSkill skill;
+
+        public Weapon(Die _die, EquipmentSkill _skill, string _name) : base(_name)
+        {
             die = _die;
-            ac = _ac;
+            skill = _skill;
+        }
+    }
+
+    public class Armor : Item
+    {
+        Die defense;
+        ArmorType armor;
+        EquipmentSkill skill;
+
+        public Armor(Die _defense, ArmorType _armor, EquipmentSkill _skill, string _name) : base(_name)
+        {
+            defense = _defense;
+            armor = _armor;
+            skill = _skill;
         }
     }
 }
