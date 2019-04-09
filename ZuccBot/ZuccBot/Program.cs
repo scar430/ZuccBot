@@ -15,7 +15,6 @@ using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using ZuccBot.dd;
 
 //**NOTE** .NET Core 2.0 is the recommended target framework. (I don't know how your opening this project)
 //**NOTE** There may or may not be a 'README.txt', please check, if 'README.txt' isn't in the main folder (folder that contains ZuccBot.sln) then ignore this.
@@ -63,7 +62,6 @@ namespace ZuccBot
             //Command subscriptions
             commands.RegisterCommands<Commands>();//General commands (Utility: banning, kicking, etc.)
             commands.RegisterCommands<GenericRPG>();//RPG commands (Create characters, attack entities, etc.)
-            commands.RegisterCommands<ddCommands>();//D&D commands (Retrieve information etc.) Expect this to change.
 
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
             await Task.Delay(-1);//Wait infinitely. Bot purgatory. >:)
@@ -72,34 +70,29 @@ namespace ZuccBot
 
         //**NOTE** You can NOT serialize DiscordEmbedBuilders and cast them as DiscordEmbeds upon deserialization, you MUST serialize DiscordEmbeds as DiscordEmbeds, if you need to serialize a DiscordEmbed then construct it FIRST and then serialize, otherwise deserialization will NOT work.
 
-        //Most, if not, all of this code is related to paginated embeds as this is the event that's fire per each reaction
-        //This might change in the future.
+        //This is some really janky code, you have been warned.
+        //Most, if not, all of this code is related to paginated embeds as this is the event that's fired on every reaction
         //Ethan helped me with this part, the main problem I was having was that objects weren't serializing to the JSON properly and I was serializing DiscordEmbedBuilders and trying to cast them as a generic var and then construct a DiscordEmbed with that. (You normally create DiscordEmbeds this way, however this was the exception)
         private static async Task Discord_ReactionAdded(MessageReactionAddEventArgs e)
         {
             //This is gonna read the file thats being called (CharacterConfig.txt)
-            //C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt
-            using (StreamReader file = File.OpenText("C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
             {
-                //Hacking the Matrix... ̿̿ ̿̿ ̿̿ ̿'̿'\̵͇̿̿\з= ( ▀ ͜͞ʖ▀) =ε/̵͇̿̿/’̿’̿ ̿ ̿̿ ̿̿ ̿̿
+                //Row, row, row your boat, gently down the stream...
 
                 ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
-                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current filestream
-                Console.WriteLine(tcr);
-                
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current steam
+
                 //List because theres multiple embeds and lists are easy to edit.
                 List<DiscordEmbed> embed = (List<DiscordEmbed>)serializer.Deserialize(file, typeof(List<DiscordEmbed>));
 
-                //**NOTE** Paginated Embeds are currently done in a really janky way, at some point these will be redone.
-
-                //There were problems with constants and switch statements and emojis, that's why this extremely convulated if statement exists
+                //**NOTE**There were problems with constants and switch statements and emojis, that's why this extremely convulated if statement exists
                 //Check if the message embed is the same as the first listed embed in the txt file. (the embeds are listed on the txt file in the correct order they should be displayed, e.g. the first listed embed is the first embed that is called)
-                //The basically makes sure that other actions don't conflict with every other embed, otherwise you may run into problems
                 if (e.Message.Embeds[0].Title == embed[0].Title)
                 {
                     if (e.Message.Author.IsCurrent == e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot)
                     {
-                        //Switch statements couldn't work due to Discord Emojis being constant, among other things
+                        //Switch statements couldn't work due to Discord Emojis not being constant, among other things
                         if (e.Emoji == DiscordEmoji.FromName(discord, ":man:") || e.Emoji == DiscordEmoji.FromName(discord, ":leaves:") || e.Emoji == DiscordEmoji.FromName(discord, ":pick:"))
                         {
                             if (e.Emoji == DiscordEmoji.FromName(discord, ":man:"))
@@ -107,12 +100,12 @@ namespace ZuccBot
 
                             }
                             else
-                            if (e.Emoji == DiscordEmoji.FromName(discord, ":leaves:"))
+                                if (e.Emoji == DiscordEmoji.FromName(discord, ":leaves:"))
                             {
 
                             }
                             else
-                            if (e.Emoji == DiscordEmoji.FromName(discord, ":pick:"))
+                                if (e.Emoji == DiscordEmoji.FromName(discord, ":pick:"))
                             {
 
                             }
@@ -147,18 +140,17 @@ namespace ZuccBot
                     {
                         if (e.Emoji == DiscordEmoji.FromName(discord, ":crossed_swords:") || e.Emoji == DiscordEmoji.FromName(discord, ":bow_and_arrow:") || e.Emoji == DiscordEmoji.FromName(discord, ":dagger:"))
                         {
-                            Console.WriteLine("last");
                             if (e.Emoji == DiscordEmoji.FromName(discord, ":crossed_swords:"))
                             {
 
                             }
                             else
-                            if (e.Emoji == DiscordEmoji.FromName(discord, ":bow_and_arrow:"))
+                                if (e.Emoji == DiscordEmoji.FromName(discord, ":bow_and_arrow:"))
                             {
 
                             }
                             else
-                            if (e.Emoji == DiscordEmoji.FromName(discord, ":dagger:"))
+                                if (e.Emoji == DiscordEmoji.FromName(discord, ":dagger:"))
                             {
 
                             }
@@ -167,64 +159,6 @@ namespace ZuccBot
                             await e.Message.DeleteAsync();
 
                             //The task was completed successfully and no longer needs to be active
-                            await Task.CompletedTask;
-                        }
-                        else
-                        {
-                            await Task.Delay(100);
-                        }
-                    }
-                    else
-                    {
-                        await Task.Delay(100);
-                    }
-                }
-                else
-                {
-                    await Task.Delay(100);
-                }
-            }
-
-            //D&D Information
-            //C:\\Users\\fir1.MY\\Desktop\\ProcessingProjects\\ProcessingGithub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt
-            using (StreamReader file = File.OpenText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\dd\\ddConfig.txt"))
-            {
-
-                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
-                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current filestream
-                Console.WriteLine(tcr);
-
-                //List because theres multiple embeds and lists are easy to edit.
-                Dictionary<string, DiscordEmbed> embed = (Dictionary<string, DiscordEmbed>)serializer.Deserialize(file, typeof(Dictionary<string, DiscordEmbed>));
-
-                if (e.Message.Embeds[0].Title == embed["topics"].Title)
-                {
-                    if (e.Message.Author.IsCurrent == e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot)
-                    {
-                        //There were problems with constants and switch statements and emojis, that's why this extremely convulated if statement exists
-                        if (e.Emoji == DiscordEmoji.FromName(discord, ":one:") || e.Emoji == DiscordEmoji.FromName(discord, ":two:") || e.Emoji == DiscordEmoji.FromName(discord, ":three:"))
-                        {
-                            if (e.Emoji == DiscordEmoji.FromName(discord, ":one:"))
-                            {
-                                await e.Message.ModifyAsync($"", embed["charactercreation"]);
-                            }
-                            else
-                            if (e.Emoji == DiscordEmoji.FromName(discord, ":two:"))
-                            {
-
-                            }
-                            else
-                            if (e.Emoji == DiscordEmoji.FromName(discord, ":three:"))
-                            {
-
-                            }
-                            else
-                            {
-                                await Task.Delay(100);
-                            }
-
-                            await e.Message.DeleteAllReactionsAsync();
-
                             await Task.CompletedTask;
                         }
                         else

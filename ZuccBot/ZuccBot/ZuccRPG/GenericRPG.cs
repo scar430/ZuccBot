@@ -33,26 +33,50 @@ namespace ZuccBot.ZuccRPG
         //Command : rpgCreateCharacter
         //This function is subject to a lot of change.
         [Command(commandPrefix + "CreateCharacter"), Aliases(commandPrefix + "cc", commandPrefix + "createCharacter", commandPrefix + "createcharacter", commandPrefix + "newcharacter", commandPrefix + "newchar", commandPrefix + "newCharacter", commandPrefix + "createchar")]
-        public async Task CreateCharacter(CommandContext ctx)
+        public Task CreateCharacter(CommandContext ctx)
         {
-            // serialize JSON directly to a file
-            /*using (StreamWriter file = File.CreateText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+            using (FileStream file = File.OpenWrite(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\LocationConfig.txt"))
             {
-                var embed = new DiscordEmbedBuilder() { Title = "Race", Description = "Select the reaction the corresponds with the Emoji associated with your desired selection.", Color = DiscordColor.CornflowerBlue };
-                embed.AddField(":man: __Human__", "Example Description\nAbility Score: This is __not__ implemented yet.");
-                embed.AddField(":leaves: __Elf__", "Example Description\nAbility Score: This is __not__ implemented yet.");
-                embed.AddField(":pick: __Dwarf__", "Example Description\nAbility Score: This is __not__ implemented yet.");
+                //More of a debug feature, jsut checks what your doing and can log what your accessing
+                ITraceWriter tcr = new MemoryTraceWriter();
 
-                List<DiscordEmbedBuilder> embeds = new List<DiscordEmbedBuilder>();
-                embeds.Add(embed);
+                //Is gonna use JSON magic on whatever we are targeting with the current file stream
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
 
+                
+
+                JsonConvert.SerializeObject(locations);
+            }
+            
+
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\LocationConfig.txt"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
                 JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(file, embeds);
-            }*/
+                serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                serializer.NullValueHandling = NullValueHandling.Ignore;
 
-            //Read "CharacterConfig.txt"
-            //C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt
-            using (StreamReader file = File.OpenText(@"C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccRPG\\CharacterConfig.txt"))
+                IEnumerable<Location> _locations = new Location[] { };
+                List<Entity> entities = new List<Entity>();
+                List<Item> items = new List<Item>();
+
+                Location Bedrooms = new Location("Bedrooms", Region.Hills, null, entities, items);
+                IEnumerable<Location> innsLocations = new Location[] { Bedrooms };
+                Location Inn = new Location("Inn", Region.Hills, innsLocations, entities, items);
+
+                List<Entity> tentities = new List<Entity>() { };
+                Location Tavern = new Location("Tavern", Region.Hills, _locations, entities, items);
+
+                Dictionary<string, Location> locations = new Dictionary<string, Location>();
+                locations.Add("inn", Inn);
+                locations.Add("tavern", Tavern);
+
+                serializer.Serialize(writer, locations);
+                // {"ExpiryDate":new Date(1230375600000),"Price":0}
+            }
+            return Task.CompletedTask;
+            /*//Read "CharacterConfig.txt"
+            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
             {
                 //More of a debug feature, jsut checks what your doing and can log what your accessing
                 ITraceWriter tcr = new MemoryTraceWriter();
@@ -69,7 +93,7 @@ namespace ZuccBot.ZuccRPG
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
-            }
+            }*/
         }
 
         //**NOTE** This WILL change
@@ -103,7 +127,7 @@ namespace ZuccBot.ZuccRPG
                     if (location == _location.name)
                     {
                         //Changed the users location to the specified one.
-                        users[ctx.Member].location = _location;
+                        //users[ctx.Member].location = _location;
                         
                         //Inform the user that their avatar was moved to another location
                         await ctx.RespondAsync($"{ctx.User.Mention}'s avatar was moved to `{_location.name}`");
@@ -121,7 +145,7 @@ namespace ZuccBot.ZuccRPG
             
         }
 
-        [Command(commandPrefix + "LocationInformation"), Aliases(commandPrefix + "locInfo", commandPrefix + "hereinfo", commandPrefix + "infohere", commandPrefix + "infoHere", commandPrefix + "LocInfo")]
+        /*[Command(commandPrefix + "LocationInformation"), Aliases(commandPrefix + "locInfo", commandPrefix + "hereinfo", commandPrefix + "infohere", commandPrefix + "infoHere", commandPrefix + "LocInfo")]
         public async Task LocationInformation(CommandContext ctx)
         {
             try
@@ -156,7 +180,7 @@ namespace ZuccBot.ZuccRPG
                 //If an exception was thrown, the player probably didn't create a character
                 await ctx.RespondAsync($"A serious problem has occurred. The user has probably __NOT__ created a character yet.");
             }
-        }
+        }*/
 
         //**LIST LOCATIONS**
         //Command : rpgWhatLocations
