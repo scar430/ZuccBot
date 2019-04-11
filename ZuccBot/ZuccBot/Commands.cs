@@ -20,6 +20,49 @@ namespace ZuccBot
             Environment.Exit(420);//huehuehuehue
         }
         
+        [Command("log"), Description("Records messages by Guild, Channel, and User")]
+        public async Task Log(CommandContext ctx)
+        {
+            //try
+            //{
+            /*foreach (DiscordGuild guild in Program.discord.Guilds.Values)
+            {
+                await Program.discord.SendMessageAsync(guild.GetDefaultChannel(), $"{Program.discord.CurrentUser.Mention} is now ***RECORDING*** everything that is being said.");
+            }*/
+            var listener = Program.discord.GetInteractivityModule();
+            MessageContext msg = await listener.WaitForMessageAsync(null, TimeSpan.FromMinutes(-1));
+
+            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+            using (StreamWriter _file = File.CreateText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + msg.Guild.Name.ToString() + "\\" + msg.Channel.Name.ToString() + "\\" + msg.Channel.Name.ToString() + ".txt"))
+            {
+                using (StreamWriter file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + msg.Guild.Name.ToString() + "\\" + msg.Channel.Name.ToString() + "\\" + msg.Channel.Name.ToString() + ".txt"))
+                {
+                    file.WriteLine("Date : " + DateTime.Today.ToString() + " | " + "Time : " + DateTime.Today.TimeOfDay.ToString() + " | " + "Guild : " + msg.Guild.ToString() + " | " + "Channel : " + msg.Channel.Name.ToString() + " | " + "User : " + msg.User.Username.ToString());
+                }
+            }
+
+            await Task.Delay(-1);
+            //}
+            /*catch
+            {
+                try
+                {
+                    foreach (DiscordGuild guild in Program.discord.Guilds.Values)
+                    {
+                        await Program.discord.SendMessageAsync(guild.GetDefaultChannel(), $"{Program.discord.CurrentUser.Mention} is ***NOT RECORDING*** everything that is being said.");
+                    }
+                    await ctx.Channel.SendMessageAsync($"The chat log has failed.");
+                    Console.WriteLine(Console.Error.ToString());
+                    await Task.CompletedTask;
+                }
+                catch
+                {
+                    Console.WriteLine("The chat log has failed.");
+                    Console.WriteLine(Console.Error.ToString());
+                    await Task.CompletedTask;
+                }
+            }*/
+        }        
 
         //Basic hi commmand
         [Command("hi"), Description("Say hello!")]
