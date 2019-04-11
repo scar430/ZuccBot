@@ -1,0 +1,15 @@
+Date : 4/11/2019 12:00:00 AM | Time : 00:00:00 | Guild : Tinkery | Channel : test-channel | User : scar430
+Date : 4/11/2019 12:00:00 AM | Time : 00:00:00 | Guild : Tinkery | Channel : test-channel | User : scar430
+Date : 4/11/2019 12:00:00 AM | Time : 00:00:00 | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : "Message 565992209456037889; Attachment count: 0; Embed count: 0; Contents: .log"
+Date : 4/11/2019 12:00:00 AM | Time : 00:00:00 | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : "Message 565992254980882452; Attachment count: 0; Embed count: 0; Contents: Let's roll some dice baby, doe this log work?"
+Date : 4/11/2019 12:00:00 AM | Time : 00:00:00 | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : "Message 565992420303700010; Attachment count: 0; Embed count: 0; Contents: .off"
+Date : 4/11/2019 12:00:00 AM | Time : 00:00:00 | Guild : Tinkery | Channel : test-channel | User : ZuccBot | Message : "Message 565992421364858900; Attachment count: 0; Embed count: 0; Contents: ZuccBot is turning off."
+Date : 4/11/2019 12:00:00 AM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : "g"
+Date : 4/11/2019 12:00:00 AM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : "g"
+Date : 4/11/2019 1:37:06 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : "ggg"
+Date : 4/11/2019 12:00:00 AM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : "test"
+Date : 4/11/2019 12:00:00 AM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : "Check <#554035987873923123> if you wanna see"
+**Date** : 4/11/2019 12:00:00 AM | **Guild** : Tinkery | **Channel** : test-channel | **User** : scar430 | **Message** : "test channel"
+**Date** : 4/11/2019 12:00:00 AM | **Guild** : Tinkery | **Channel** : test-channel | **User** : scar430 | **Message** : "test"
+**Date** : 4/11/2019 12:00:00 AM | **Guild** : Tinkery | **Channel** : test-channel | **User** : scar430 | **Message** : "test"
+**Date** : 4/11/2019 12:00:00 AM | **Guild** : Tinkery | **Channel** : test-channel | **User** : scar430 | **Message** : "its not creating a log channel"

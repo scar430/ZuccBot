@@ -21,9 +21,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace ZuccBot
 {
-    class Program
+    public class Program
     {
-        static DiscordClient discord;
+        public static DiscordClient discord;
         static CommandsNextModule commands;
 
         static void Main(string[] args)
@@ -41,7 +41,7 @@ namespace ZuccBot
             discord = new DiscordClient(new DiscordConfiguration
             {
                 //Don't look I'm exposed!
-                Token = "NTUzNDYwMTEwMzI5MTE4NzIx.D2Rqeg.6ATVmDT5kF4XF_3YUTjMxZj8SDE",
+                Token = "NTUzNDYwMTEwMzI5MTE4NzIx.XK-wtg.2Q81ZcxriDHN-U1oTiGdiPaBucY",
 
                 //You know the drill...
                 TokenType = TokenType.Bot,
@@ -58,6 +58,7 @@ namespace ZuccBot
 
             //This basically detects reactions, it's subscribing to a Task called 'Discord_ReactionAdded', it is listed below...
             discord.MessageReactionAdded += Discord_ReactionAdded;
+            discord.MessageCreated += Discord_MessageCreated;
 
             //Command subscriptions
             commands.RegisterCommands<Commands>();//General commands (Utility: banning, kicking, etc.)
@@ -66,6 +67,100 @@ namespace ZuccBot
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
             await Task.Delay(-1);//Wait infinitely. Bot purgatory. >:)
         }
+
+        private static Task Discord_MessageCreated(MessageCreateEventArgs e)
+        {
+            try
+            {
+                if (!e.Author.IsBot)
+                {
+                    string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString());
+                    string txtfile = "\\" + e.Channel.Name.ToString() + ".txt";
+                    string msg = "**Date** : " + DateTime.Today.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Channel.Name.ToString() + " | " + "**User** : " + e.Author.Username.ToString() + " | " + "**Message** : " + '"' + e.Message.Content + '"';
+
+                    if (System.IO.File.Exists(path) == false)
+                    {
+                        Directory.CreateDirectory(path);
+
+                        if (Directory.GetFiles(path).Contains(txtfile))
+                        {
+                            using (StreamWriter fs = File.CreateText(path + txtfile))
+                            {
+                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                                using (StreamWriter file = File.AppendText(path + txtfile))
+                                {
+                                    using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
+                                    {
+                                        file.WriteLine(msg);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                            using (StreamWriter file = File.AppendText(path + txtfile))
+                            {
+                                file.WriteLine(msg);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                        using (StreamWriter file = File.AppendText(path))
+                        {
+                            using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
+                            {
+                                file.WriteLine(msg);
+                            }
+                        }
+                    }
+
+                    foreach (DiscordGuild guild in discord.Guilds.Values)
+                    {
+                        for (int i = 0; i < guild.Channels.Count - 1; i++)
+                        {
+                            if (guild.Channels[i].Name == "log")
+                            {
+                                Console.WriteLine(guild.Name);
+                                guild.Channels[i].SendMessageAsync($"{msg}");
+                                break;
+                            }
+                            else
+                            {
+                                if (i == guild.Channels.Count - 1)
+                                {
+                                    guild.CreateChannelAsync("log", ChannelType.Text);
+                                    guild.Channels[i].SendMessageAsync($"{msg}");
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                try
+                {
+                    foreach (DiscordGuild guild in discord.Guilds.Values)
+                    {
+                        guild.GetDefaultChannel().SendMessageAsync($"{discord.CurrentUser} is ***NOT RECORDING***.");
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine("No longer recording message logs.");
+                }
+            }
+            return Task.CompletedTask;
+        }
+
+
 
 
         //**NOTE** You can NOT serialize DiscordEmbedBuilders and cast them as DiscordEmbeds upon deserialization, you MUST serialize DiscordEmbeds as DiscordEmbeds, if you need to serialize a DiscordEmbed then construct it FIRST and then serialize, otherwise deserialization will NOT work.
