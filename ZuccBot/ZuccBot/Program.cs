@@ -53,30 +53,226 @@ namespace ZuccBot
             {
                 //What could this be UWU
                 //I chose the period because it's easy to select on a phone and also one of the easiest buttons to reach from the bottom right side of the keyboard
-                StringPrefix = "."//This is a period in case this is to small or looks weird on your machine
+                StringPrefix = "."
             });
 
             //This basically detects reactions, it's subscribing to a Task called 'Discord_ReactionAdded', it is listed below...
             discord.MessageReactionAdded += Discord_ReactionAdded;
             discord.MessageCreated += Discord_MessageCreated;
+            discord.MessageDeleted += Discord_MessageDeleted;
+            discord.GuildMemberAdded += Discord_MemberAdded;
+            discord.GuildMemberRemoved += Discord_MemberRemoved;
 
             //Command subscriptions
-            commands.RegisterCommands<Commands>();//General commands (Utility: banning, kicking, etc.)
+            commands.RegisterCommands<Commands>();//General commands (banning, kicking, etc.)
             commands.RegisterCommands<GenericRPG>();//RPG commands (Create characters, attack entities, etc.)
 
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
             await Task.Delay(-1);//Wait infinitely. Bot purgatory. >:)
         }
 
-        private static Task Discord_MessageCreated(MessageCreateEventArgs e)
+        //Logs of players being removed and added are attributed to the default channel
+
+        private static Task Discord_MemberRemoved(GuildMemberRemoveEventArgs e)
         {
             try
             {
-                if (!e.Author.IsBot)
+                if (!e.Member.IsBot)
+                {
+                    string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Guild.GetDefaultChannel().Name.ToString());
+                    string txtfile = "\\" + e.Guild.GetDefaultChannel().Name.ToString() + ".txt";
+                    string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Guild.GetDefaultChannel().Name.ToString() + " | " + "**User Removed** : " + e.Member.Username.ToString();
+                    string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Member.Username.ToString() + " | " + "User Removed : " + e.Member.Username.ToString();
+
+                    if (System.IO.File.Exists(path) == false)
+                    {
+                        Directory.CreateDirectory(path);
+
+                        if (Directory.GetFiles(path).Contains(txtfile))
+                        {
+                            using (StreamWriter fs = File.CreateText(path + txtfile))
+                            {
+                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                                using (StreamWriter file = File.AppendText(path + txtfile))
+                                {
+                                    using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
+                                    {
+                                        file.WriteLine(log);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                            using (StreamWriter file = File.AppendText(path + txtfile))
+                            {
+                                file.WriteLine(log);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                        using (StreamWriter file = File.AppendText(path))
+                        {
+                            using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
+                            {
+                                file.WriteLine(msg);
+                            }
+                        }
+                    }
+
+                    //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
+                    foreach (DiscordGuild guild in discord.Guilds.Values)
+                    {
+                        if (guild == e.Guild)
+                        {
+                            //channels equals guild.Channels as a list.
+                            var channels = guild.Channels.ToList();
+
+                            //If a channel exists named "log", then print chat logs to it, if not create that channel and print logs to it.
+                            if (channels.Exists(channel => channel.Name == "log"))
+                            {
+                                //_channel will be equal to the first channel found name "log".
+                                var _channel = channels.Find(x => x.Name == "log");
+
+                                //Record logs to this channel
+                                _channel.SendMessageAsync($"{msg}");
+
+                                //Stop trying to log this message.
+                                break;
+                            }
+                            else
+                            {
+                                //If the appropiate channel wasn't found then create a text channel name "log"
+                                guild.CreateChannelAsync("log", ChannelType.Text);
+
+                                //_channel will be equal to the first channel found name "log".
+                                var _channel = channels.Find(x => x.Name == "log");
+
+                                //Record logs to this channel
+                                _channel.SendMessageAsync($"{msg}");
+
+                                //Stop trying to log this message.
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+            return Task.CompletedTask;
+        }
+
+        private static Task Discord_MemberAdded(GuildMemberAddEventArgs e)
+        {
+            try
+            {
+                if (!e.Member.IsBot)
+                {
+                    string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Guild.GetDefaultChannel().Name.ToString());
+                    string txtfile = "\\" + e.Guild.GetDefaultChannel().Name.ToString() + ".txt";
+                    string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Guild.GetDefaultChannel().Name.ToString() + " | " + "**User Joined** : " + e.Member.Username.ToString();
+                    string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Member.Username.ToString() + " | " + "User Joined : " + e.Member.Username.ToString();
+
+                    if (System.IO.File.Exists(path) == false)
+                    {
+                        Directory.CreateDirectory(path);
+
+                        if (Directory.GetFiles(path).Contains(txtfile))
+                        {
+                            using (StreamWriter fs = File.CreateText(path + txtfile))
+                            {
+                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                                using (StreamWriter file = File.AppendText(path + txtfile))
+                                {
+                                    using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
+                                    {
+                                        file.WriteLine(log);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                            using (StreamWriter file = File.AppendText(path + txtfile))
+                            {
+                                file.WriteLine(log);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                        using (StreamWriter file = File.AppendText(path))
+                        {
+                            using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
+                            {
+                                file.WriteLine(msg);
+                            }
+                        }
+                    }
+
+                    //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
+                    foreach (DiscordGuild guild in discord.Guilds.Values)
+                    {
+                        if (guild == e.Guild)
+                        {
+                            //channels equals guild.Channels as a list.
+                            var channels = guild.Channels.ToList();
+
+                            //If a channel exists named "log", then print chat logs to it, if not create that channel and print logs to it.
+                            if (channels.Exists(channel => channel.Name == "log"))
+                            {
+                                //_channel will be equal to the first channel found name "log".
+                                var _channel = channels.Find(x => x.Name == "log");
+
+                                //Record logs to this channel
+                                _channel.SendMessageAsync($"{msg}");
+
+                                //Stop trying to log this message.
+                                break;
+                            }
+                            else
+                            {
+                                //If the appropiate channel wasn't found then create a text channel name "log"
+                                guild.CreateChannelAsync("log", ChannelType.Text);
+
+                                //_channel will be equal to the first channel found name "log".
+                                var _channel = channels.Find(x => x.Name == "log");
+
+                                //Record logs to this channel
+                                _channel.SendMessageAsync($"{msg}");
+
+                                //Stop trying to log this message.
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+            return Task.CompletedTask;
+        }
+
+        private static Task Discord_MessageDeleted(MessageDeleteEventArgs e)
+        {
+            try
+            {
+                if (!e.Message.Author.IsBot)
                 {
                     string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString());
                     string txtfile = "\\" + e.Channel.Name.ToString() + ".txt";
-                    string msg = "**Date** : " + DateTime.Today.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Channel.Name.ToString() + " | " + "**User** : " + e.Author.Username.ToString() + " | " + "**Message** : " + '"' + e.Message.Content + '"';
+                    string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Channel.Name.ToString() + " | " + "**User** : " + e.Message.Author.Username.ToString() + " | " + "**Deleted Message** : " + '"' + e.Message.Content + '"';
+                    string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Channel.Name.ToString() + " | " + "User : " + e.Message.Author.Username.ToString() + " | " + "Deleted Message : " + '"' + e.Message.Content + '"';
 
                     if (System.IO.File.Exists(path) == false)
                     {
@@ -91,7 +287,7 @@ namespace ZuccBot
                                 {
                                     using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
                                     {
-                                        file.WriteLine(msg);
+                                        file.WriteLine(log);
                                     }
                                 }
                             }
@@ -101,7 +297,7 @@ namespace ZuccBot
                             //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
                             using (StreamWriter file = File.AppendText(path + txtfile))
                             {
-                                file.WriteLine(msg);
+                                file.WriteLine(log);
                             }
                         }
                     }
@@ -117,27 +313,39 @@ namespace ZuccBot
                         }
                     }
 
+                    //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
                     foreach (DiscordGuild guild in discord.Guilds.Values)
                     {
-                        for (int i = 0; i < guild.Channels.Count - 1; i++)
+                        if (guild == e.Guild)
                         {
-                            if (guild.Channels[i].Name == "log")
+                            //channels equals guild.Channels as a list.
+                            var channels = guild.Channels.ToList();
+
+                            //If a channel exists named "log", then print chat logs to it, if not create that channel and print logs to it.
+                            if (channels.Exists(channel => channel.Name == "log"))
                             {
-                                Console.WriteLine(guild.Name);
-                                guild.Channels[i].SendMessageAsync($"{msg}");
+                                //_channel will be equal to the first channel found name "log".
+                                var _channel = channels.Find(x => x.Name == "log");
+
+                                //Record logs to this channel
+                                _channel.SendMessageAsync($"{msg}");
+
+                                //Stop trying to log this message.
                                 break;
                             }
                             else
                             {
-                                if (i == guild.Channels.Count - 1)
-                                {
-                                    guild.CreateChannelAsync("log", ChannelType.Text);
-                                    guild.Channels[i].SendMessageAsync($"{msg}");
-                                }
-                                else
-                                {
-                                    continue;
-                                }
+                                //If the appropiate channel wasn't found then create a text channel name "log"
+                                guild.CreateChannelAsync("log", ChannelType.Text);
+
+                                //_channel will be equal to the first channel found name "log".
+                                var _channel = channels.Find(x => x.Name == "log");
+
+                                //Record logs to this channel
+                                _channel.SendMessageAsync($"{msg}");
+
+                                //Stop trying to log this message.
+                                break;
                             }
                         }
                     }
@@ -145,17 +353,102 @@ namespace ZuccBot
             }
             catch
             {
-                try
+
+            }
+            return Task.CompletedTask;
+        }
+
+        private static Task Discord_MessageCreated(MessageCreateEventArgs e)
+        {
+            try
+            {
+                if (!e.Author.IsBot)
                 {
+                    string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString());
+                    string txtfile = "\\" + e.Channel.Name.ToString() + ".txt";
+                    string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Channel.Name.ToString() + " | " + "**User** : " + e.Author.Username.ToString() + " | " + "**Message** : " + '"' + e.Message.Content + '"';
+                    string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Channel.Name.ToString() + " | " + "User : " + e.Author.Username.ToString() + " | " + "Message : " + '"' + e.Message.Content + '"';
+
+                    if (System.IO.File.Exists(path) == false)
+                    {
+                        Directory.CreateDirectory(path);
+
+                        if (Directory.GetFiles(path).Contains(txtfile))
+                        {
+                            using (StreamWriter fs = File.CreateText(path + txtfile))
+                            {
+                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                                using (StreamWriter file = File.AppendText(path + txtfile))
+                                {
+                                    using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
+                                    {
+                                        file.WriteLine(log);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                            using (StreamWriter file = File.AppendText(path + txtfile))
+                            {
+                                file.WriteLine(log);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                        using (StreamWriter file = File.AppendText(path))
+                        {
+                            using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
+                            {
+                                file.WriteLine(msg);
+                            }
+                        }
+                    }
+
+                    //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
                     foreach (DiscordGuild guild in discord.Guilds.Values)
                     {
-                        guild.GetDefaultChannel().SendMessageAsync($"{discord.CurrentUser} is ***NOT RECORDING***.");
+                        if (guild == e.Guild)
+                        {
+                            //channels equals guild.Channels as a list.
+                            var channels = guild.Channels.ToList();
+
+                            //If a channel exists named "log", then print chat logs to it, if not create that channel and print logs to it.
+                            if (channels.Exists(channel => channel.Name == "log"))
+                            {
+                                //_channel will be equal to the first channel found name "log".
+                                var _channel = channels.Find(x => x.Name == "log");
+
+                                //Record logs to this channel
+                                _channel.SendMessageAsync($"{msg}");
+
+                                //Stop trying to log this message.
+                                break;
+                            }
+                            else
+                            {
+                                //If the appropiate channel wasn't found then create a text channel name "log"
+                                guild.CreateChannelAsync("log", ChannelType.Text);
+
+                                //_channel will be equal to the first channel found name "log".
+                                var _channel = channels.Find(x => x.Name == "log");
+
+                                //Record logs to this channel
+                                _channel.SendMessageAsync($"{msg}");
+
+                                //Stop trying to log this message.
+                                break;
+                            }
+                        }
                     }
                 }
-                catch
-                {
-                    Console.WriteLine("No longer recording message logs.");
-                }
+            }
+            catch
+            {
+
             }
             return Task.CompletedTask;
         }

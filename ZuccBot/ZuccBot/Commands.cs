@@ -48,13 +48,15 @@ namespace ZuccBot
             await ctx.RespondAsync($"Hey, {ctx.User.Mention}, here's a link to Columbia's website: https://www.gocolumbia.edu/");
         }
 
+        /*
         //Was gonna implement this at the request of Chris Gregory, however I abondoned it because I found something more interesting to do.
         [Command("bugHunt")]
-        public async Task bugHunt(CommandContext ctx)
+        public async Task bugHunt(CommandContext ctx, string name, string color, )
         {
             await ctx.RespondWithFileAsync("C:/Users/scar4/Desktop/Data/GitHubRepositories/ZuccBot/Assets");
             Console.WriteLine("Uploading Bug Hunt picture");
         }
+        */
 
         /*What time did the mentioned user join
          * Command : userJoined @User
@@ -62,10 +64,6 @@ namespace ZuccBot
         [Command("userJoined"), Aliases("joined", "join", "userJoin", "userjoin", "userjoined"), Description("What time did the mentioned user join the server?")]
         public async Task joined(CommandContext ctx, DiscordMember member)
         {
-
-            // typing indicator to make Mr. Zuckerburg feel more human.
-            //await ctx.TriggerTypingAsync();
-
             string date = member.JoinedAt.ToString();//Create a string because some weird things were happening when it wasn't.
 
             //Prioritizes nickname, if you don't have a nickname it shows your display name, I want it to avoid mentioning people cuz that is annoying.
@@ -90,14 +88,18 @@ namespace ZuccBot
             await ctx.RespondAsync($"Your welcome!");
         }
 
+        [Command("createRole"), Description("Create a role.")]
+        public async Task createRole(CommandContext ctx)
+        {
+            await ctx.Guild.CreateRoleAsync();
+        }
+
         /* Grant a Role to a user.
          * Command : addRole @User @Role
          */
         [Command("addRole"), Aliases("role", "aRole", "addrole", "arole"), RequirePermissions(Permissions.Administrator), Description("Add a role to a player."), Hidden]
         public async Task addRole(CommandContext ctx, DiscordMember member, DiscordRole role)
         {
-            // typing indicator to make Mr. Zuckerburg feel more human.
-            //await ctx.TriggerTypingAsync();
             await ctx.Guild.GrantRoleAsync(member, role);
             await ctx.RespondAsync($"Granted {role} to {member.DisplayName}.");
         }
@@ -108,8 +110,6 @@ namespace ZuccBot
         [Command("removeRole"), Aliases("rRole", "removerole", "rrole"), RequirePermissions(Permissions.Administrator), Description("Remove a users role, it MUST include a reason at the end (you can't pass in null)."), Hidden]
         public async Task removeRole(CommandContext ctx, DiscordMember member, DiscordRole role, string reason)
         {
-            // typing indicator to make Mr. Zuckerburg feel more human.
-            //await ctx.TriggerTypingAsync();
             await ctx.Guild.RevokeRoleAsync(member, role, reason);
             await ctx.RespondAsync($"Revoked {member.DisplayName}'s role as {role} because of ''{reason}''.");
         }
@@ -121,8 +121,6 @@ namespace ZuccBot
         [Command("kickUser"), Aliases("kick", "Kick"), RequirePermissions(Permissions.Administrator), Description("Kick mentioned users from the server. This does not work on users with the 'Administrator' Permission"), Hidden]
         public async Task kickUser(CommandContext ctx, DiscordMember member)
         {
-            // typing indicator to make Mr. Zuckerburg feel more human.
-            //await ctx.TriggerTypingAsync();
             await ctx.Guild.RemoveMemberAsync(member);//Removing the mentioned user from the Guild.
             await ctx.RespondAsync($"Kicked {member.DisplayName} from {ctx.Guild}.");//Just the Bot telling everyone what it is doing
         }
@@ -130,8 +128,6 @@ namespace ZuccBot
         [Command("banUser"), Aliases("ban", "Ban"), RequirePermissions(Permissions.Administrator), Description("Used to BAN mentioned users for the set amount of days"), Hidden]
         public async Task banUser(CommandContext ctx, DiscordMember member, int days, string reason)
         {
-            // typing indicator to make Mr. Zuckerburg feel more human.
-            //await ctx.TriggerTypingAsync();
             await ctx.Guild.BanMemberAsync(member, days, reason);
             await ctx.RespondAsync($"Banned {member} from {ctx.Guild} for ''{reason}''. The Ban will be lifted {days} days from now.");
         }
@@ -139,8 +135,6 @@ namespace ZuccBot
         [Command("retrieveBans"), Aliases("findBans", "bans", "Bans", "FindBans"), Description("Lists all bans.")]
         public async Task retrieveBans(CommandContext ctx)
         {
-            // typing indicator to make Mr. Zuckerburg feel more human.
-            //await ctx.TriggerTypingAsync();
             await ctx.RespondAsync($"List of Bans from {ctx.Guild} : ");//Just the bot telling everyone what it is posting.
             await ctx.Guild.GetBansAsync();
         }
@@ -150,8 +144,6 @@ namespace ZuccBot
         [Command("muteUser"), Aliases("mute", "muteuser"), Description("Mute the mentioned user, this is for NO set time and you MUST use unmute to unmute the muted player"), RequirePermissions(Permissions.Administrator), Hidden]
         public async Task muteUser(CommandContext ctx, DiscordMember member, string reason)
         {
-            // typing indicator to make Mr. Zuckerburg feel more human.
-            //await ctx.TriggerTypingAsync();
             await member.SetMuteAsync(true, reason);//This is incorrect because I only mentioned the user and not in what channel they are being mute.
             await ctx.RespondAsync($"Muted {member.DisplayName} for '{reason}'");//Just the bot telling everyone what it's doing.
         }
@@ -160,8 +152,6 @@ namespace ZuccBot
         [Command("unmuteUser"), Aliases("unmute", "unmuteuser", "nomute", "removemute", "rmute", "nmute", "omittmute", "omute"), RequirePermissions(Permissions.Administrator), Description("Unmute the mentioned user."), Hidden]
         public async Task unmuteUser(CommandContext ctx, DiscordMember member, string reason)
         {
-            // typing indicator to make Mr. Zuckerburg feel more human.
-            //await ctx.TriggerTypingAsync();
             await member.SetMuteAsync(false, reason);//Not sure how to reference the channel and the player and unmute them in that.
             await ctx.RespondAsync($"Unmuted {member.DisplayName}.");//Just the bot telling everyone what it's doing.
         }
