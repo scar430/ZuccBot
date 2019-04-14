@@ -14,6 +14,7 @@ namespace ZuccBot
     public class Commands
     {
         
+        //This command only works for the owner's account (scar430) so if your trying to run this and it's not working then that's why.
         //Shut Down command
         [Command("ShutDown"), Aliases("off", "shutdown", "shutoff", "die", "death", "sleep"), RequireOwner, Hidden]
         public async Task ShutOff(CommandContext ctx)
@@ -44,19 +45,8 @@ namespace ZuccBot
         [Command("columbia"), Aliases("school", "college"), Description("Posts the schools website.")]
         public async Task columbia(CommandContext ctx)
         {
-            //DiscordWebhook webhook = new DiscordWebhook();
             await ctx.RespondAsync($"Hey, {ctx.User.Mention}, here's a link to Columbia's website: https://www.gocolumbia.edu/");
         }
-
-        /*
-        //Was gonna implement this at the request of Chris Gregory, however I abondoned it because I found something more interesting to do.
-        [Command("bugHunt")]
-        public async Task bugHunt(CommandContext ctx, string name, string color, )
-        {
-            await ctx.RespondWithFileAsync("C:/Users/scar4/Desktop/Data/GitHubRepositories/ZuccBot/Assets");
-            Console.WriteLine("Uploading Bug Hunt picture");
-        }
-        */
 
         /*What time did the mentioned user join
          * Command : userJoined @User
@@ -88,11 +78,12 @@ namespace ZuccBot
             await ctx.RespondAsync($"Your welcome!");
         }
 
+        /*
         [Command("createRole"), Description("Create a role.")]
         public async Task createRole(CommandContext ctx)
         {
             await ctx.Guild.CreateRoleAsync();
-        }
+        }*/
 
         /* Grant a Role to a user.
          * Command : addRole @User @Role

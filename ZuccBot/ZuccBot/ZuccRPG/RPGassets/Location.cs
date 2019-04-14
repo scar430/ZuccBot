@@ -14,8 +14,7 @@ namespace Main.ZuccRPG.RPGassets
     {
         Plains,//easy
         Hills,//moderate
-        Mines,//hard
-        Mountains,//punshing
+        Mountains,//hard
     }
 
     public enum Population
@@ -27,8 +26,8 @@ namespace Main.ZuccRPG.RPGassets
 
     public class Location
     {
-        public string name;//What the location is referenced by.
-        public Region region;//The basically determines the difficulty of the location
+        public string name { get; set; }//What the location is referenced by.
+        public Region region { get; set; }//The basically determines the difficulty of the location
         public Population population { get; set; }
         public IEnumerable<Location> levels { get; set; }//All the levels, these are done in succession of each other (hence it being an IEnumerable).
         public List<Entity> entities = new List<Entity>();//All the entities in the location.
@@ -42,6 +41,69 @@ namespace Main.ZuccRPG.RPGassets
             levels = _levels;
             entities = _entities;
             items = _items;
+        }
+
+        public void populateLocation()
+        {
+            switch (region)
+            {
+                case Region.Plains:
+
+                    switch (population)
+                    {
+                        case Population.Passive:
+
+                            break;
+
+                        case Population.Mixed:
+
+                            break;
+
+                        case Population.Aggressive:
+
+                            break;
+                    }
+
+                    break;
+
+                case Region.Hills:
+
+                    switch (population)
+                    {
+                        case Population.Passive:
+
+                            break;
+
+                        case Population.Mixed:
+
+                            break;
+
+                        case Population.Aggressive:
+
+                            break;
+                    }
+
+                    break;
+
+                case Region.Mountains:
+
+                    switch (population)
+                    {
+                        case Population.Passive:
+
+                            break;
+
+                        case Population.Mixed:
+
+                            break;
+
+                        case Population.Aggressive:
+
+                            break;
+                    }
+
+                    break;
+            }
         }
     }
 }

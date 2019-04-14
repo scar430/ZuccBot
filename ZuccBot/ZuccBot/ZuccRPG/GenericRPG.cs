@@ -46,29 +46,71 @@ namespace ZuccBot.ZuccRPG
                 JsonConvert.SerializeObject(locations);
             }
 
-            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\DropTableConfig.txt"))
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\DropTables\\CrudeConfig.txt"))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Converters.Add(new JavaScriptDateTimeConverter());
                 serializer.NullValueHandling = NullValueHandling.Ignore;
 
-                Weapon club = new Weapon(Die.d4, EquipmentSkill.strength, "Crude Club");
-                Weapon dagger = new Weapon(Die.d4, EquipmentSkill.dextrious, "Rusty Dagger");
-                Weapon wand = new Weapon(Die.d4, EquipmentSkill.constitution, "Gnarly Wand");
+                Weapon club = new Weapon(Die.d4, EquipmentSkill.simple, "Club");
+                Weapon shortsword = new Weapon(Die.d4, EquipmentSkill.strength, "Short Sword");
+                Weapon dagger = new Weapon(Die.d4, EquipmentSkill.dextrious, "Dagger");
+                Weapon wand = new Weapon(Die.d4, EquipmentSkill.constitution, "Wand");
+                Weapon bow = new Weapon(Die.d4, EquipmentSkill.dextrious, "Bow");
 
-                Armor chestplate = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.strength, "Rusty Chest Plate");
-                Armor oldChestPlate = new Armor(Die.d6, ArmorType.torso, EquipmentSkill.strength, "Old Chest Plate");
+                Armor head = new Armor(Die.d4, ArmorType.head, EquipmentSkill.strength, "Iron Helment");
+                Armor torso = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.strength, "Iron Chest Plate");
+                Armor leg = new Armor(Die.d4, ArmorType.leg, EquipmentSkill.strength, "Iron Leggings");
+                Armor feet = new Armor(Die.d4, ArmorType.foot, EquipmentSkill.strength, "Iron Boots");
 
-                //num = Chance * 100, if(RandomNumber > num){get loot}
-                Dictionary<float, Item> list = new Dictionary<float, Item>();
-                list.Add(0.90f, club);
-                list.Add(0.75f, dagger);
-                list.Add(0.50f, wand);
-                list.Add(0.25f, chestplate);
-                list.Add(0.15f, oldChestPlate);
+                Armor headd = new Armor(Die.d4, ArmorType.head, EquipmentSkill.dextrious, "Hood");
+                Armor torsod = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.dextrious, "Leather Vest");
+                Armor legd = new Armor(Die.d4, ArmorType.leg, EquipmentSkill.dextrious, "Leather Leggings");
+                Armor footd = new Armor(Die.d4, ArmorType.foot, EquipmentSkill.dextrious, "Leather Boots");
+
+                Armor headc = new Armor(Die.d4, ArmorType.head, EquipmentSkill.constitution, "Wizards Hat");
+                Armor torsoc = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.constitution, "Wool Robe");
+                Armor legc = new Armor(Die.d4, ArmorType.leg, EquipmentSkill.constitution, "Wool Leggings");
+                Armor footc = new Armor(Die.d4, ArmorType.foot, EquipmentSkill.constitution, "Boots");
+
+                List<Item> list = new List<Item>();
+                list.Add(club);
+                list.Add(shortsword);
+                list.Add(dagger);
+                list.Add(wand);
+                list.Add(bow);
+                list.Add(head);
+                list.Add(torso);
+                list.Add(leg);
+                list.Add(feet);
+                list.Add(headd);
+                list.Add(torsod);
+                list.Add(legd);
+                list.Add(footd);
+                list.Add(headc);
+                list.Add(torsoc);
+                list.Add(legc);
+                list.Add(footc);
 
                 serializer.Serialize(writer, locations);
+            }
+
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\DropTables\\BlandConfig.txt"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                Weapon longsword = new Weapon(Die.d6, EquipmentSkill.strength, "Long Sword");
+                Weapon rapier = new Weapon(Die.d6, EquipmentSkill.dextrious, "Rapier");
+                Weapon staff = new Weapon(Die.d6, EquipmentSkill.constitution, "Staff");
+                Weapon longbow = new Weapon(Die.d6, EquipmentSkill.dextrious, "Long Bow");
+
+
+                List<Item> list = new List<Item>();
+                
             }
 
             using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\LocationConfig.txt"))
@@ -99,7 +141,6 @@ namespace ZuccBot.ZuccRPG
 
                 serializer.Serialize(writer, locations);
             }
-            return Task.CompletedTask;
             /*//Read "CharacterConfig.txt"
             using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
             {
@@ -119,9 +160,9 @@ namespace ZuccBot.ZuccRPG
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
             }*/
+            return Task.CompletedTask;
         }
 
-        //**NOTE** This WILL change
         //**LIST PLAYERS**
         //Command : rpgPlayers
         //Lists all of the players who are partaking in the rpg (list of players is limited to server.)

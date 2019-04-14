@@ -92,7 +92,7 @@ namespace ZuccBot
                         {
                             using (StreamWriter fs = File.CreateText(path + txtfile))
                             {
-                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
+                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages and using a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
                                 using (StreamWriter file = File.AppendText(path + txtfile))
                                 {
                                     using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
@@ -375,7 +375,7 @@ namespace ZuccBot
 
                         if (Directory.GetFiles(path).Contains(txtfile))
                         {
-                            using (StreamWriter fs = File.CreateText(path + txtfile))
+                            using (StreamWriter streamWriter = File.CreateText(path + txtfile))
                             {
                                 //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
                                 using (StreamWriter file = File.AppendText(path + txtfile))
@@ -386,6 +386,15 @@ namespace ZuccBot
                                     }
                                 }
                             }
+                            /*
+                            foreach (DiscordAttachment attachment in e.Message.Attachments)
+                            {
+                                attachment.
+                                using (FileStream stream = File.Create(path + attachment.GetType().Name.ToString()))
+                                {
+                                    
+                                }
+                            }*/
                         }
                         else
                         {
