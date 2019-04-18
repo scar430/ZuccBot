@@ -20,6 +20,8 @@ using Main.ZuccRPG.RPGassets;
 
 namespace ZuccBot.ZuccRPG
 {
+    //Combat works as follows: (Defender Health + Armor Die + Skill Score) - (Weapon Die + Skill Score) = new Defender Health
+
     public class GenericRPG
     {
         const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg, this helps stop command clutter
@@ -46,7 +48,7 @@ namespace ZuccBot.ZuccRPG
                 JsonConvert.SerializeObject(locations);
             }
 
-            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\DropTables\\CrudeConfig.txt"))
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\DropConfig.txt"))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
                 JsonSerializer serializer = new JsonSerializer();
@@ -54,92 +56,151 @@ namespace ZuccBot.ZuccRPG
                 serializer.NullValueHandling = NullValueHandling.Ignore;
 
                 Weapon club = new Weapon(Die.d4, EquipmentSkill.simple, "Club");
-                Weapon shortsword = new Weapon(Die.d4, EquipmentSkill.strength, "Short Sword");
+                Weapon shortsword = new Weapon(Die.d4, EquipmentSkill.strength, "Sword");
                 Weapon dagger = new Weapon(Die.d4, EquipmentSkill.dextrious, "Dagger");
                 Weapon wand = new Weapon(Die.d4, EquipmentSkill.constitution, "Wand");
-                Weapon bow = new Weapon(Die.d4, EquipmentSkill.dextrious, "Bow");
 
-                Armor head = new Armor(Die.d4, ArmorType.head, EquipmentSkill.strength, "Iron Helment");
-                Armor torso = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.strength, "Iron Chest Plate");
-                Armor leg = new Armor(Die.d4, ArmorType.leg, EquipmentSkill.strength, "Iron Leggings");
-                Armor feet = new Armor(Die.d4, ArmorType.foot, EquipmentSkill.strength, "Iron Boots");
+                Armor leg = new Armor(Die.d4, ArmorType.leg, EquipmentSkill.strength, "Leggings");
+                Armor feet = new Armor(Die.d4, ArmorType.foot, EquipmentSkill.simple, "Boots");
+
+                Armor head = new Armor(Die.d4, ArmorType.head, EquipmentSkill.strength, "Helment");
+                Armor torso = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.strength, "Chest Plate");
 
                 Armor headd = new Armor(Die.d4, ArmorType.head, EquipmentSkill.dextrious, "Hood");
-                Armor torsod = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.dextrious, "Leather Vest");
-                Armor legd = new Armor(Die.d4, ArmorType.leg, EquipmentSkill.dextrious, "Leather Leggings");
-                Armor footd = new Armor(Die.d4, ArmorType.foot, EquipmentSkill.dextrious, "Leather Boots");
+                Armor torsod = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.dextrious, "Vest");
 
-                Armor headc = new Armor(Die.d4, ArmorType.head, EquipmentSkill.constitution, "Wizards Hat");
-                Armor torsoc = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.constitution, "Wool Robe");
-                Armor legc = new Armor(Die.d4, ArmorType.leg, EquipmentSkill.constitution, "Wool Leggings");
-                Armor footc = new Armor(Die.d4, ArmorType.foot, EquipmentSkill.constitution, "Boots");
+                Armor headc = new Armor(Die.d4, ArmorType.head, EquipmentSkill.constitution, "Hat");
+                Armor torsoc = new Armor(Die.d4, ArmorType.torso, EquipmentSkill.constitution, "Robe");
 
-                List<Item> list = new List<Item>();
-                list.Add(club);
-                list.Add(shortsword);
-                list.Add(dagger);
-                list.Add(wand);
-                list.Add(bow);
-                list.Add(head);
-                list.Add(torso);
-                list.Add(leg);
-                list.Add(feet);
-                list.Add(headd);
-                list.Add(torsod);
-                list.Add(legd);
-                list.Add(footd);
-                list.Add(headc);
-                list.Add(torsoc);
-                list.Add(legc);
-                list.Add(footc);
+                Weapon club1 = new Weapon(Die.d6, EquipmentSkill.simple, "Club");
+                Weapon shortsword1 = new Weapon(Die.d6, EquipmentSkill.strength, "Sword");
+                Weapon dagger1 = new Weapon(Die.d6, EquipmentSkill.dextrious, "Dagger");
+                Weapon wand1 = new Weapon(Die.d6, EquipmentSkill.constitution, "Wand");
 
-                serializer.Serialize(writer, locations);
-            }
+                Armor leg1 = new Armor(Die.d6, ArmorType.leg, EquipmentSkill.strength, "Leggings");
+                Armor feet1 = new Armor(Die.d6, ArmorType.foot, EquipmentSkill.simple, "Boots");
 
-            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\DropTables\\BlandConfig.txt"))
-            using (JsonWriter writer = new JsonTextWriter(sw))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Converters.Add(new JavaScriptDateTimeConverter());
-                serializer.NullValueHandling = NullValueHandling.Ignore;
+                Armor head1 = new Armor(Die.d6, ArmorType.head, EquipmentSkill.strength, "Helment");
+                Armor torso1 = new Armor(Die.d6, ArmorType.torso, EquipmentSkill.strength, "Chest Plate");
 
-                Weapon longsword = new Weapon(Die.d6, EquipmentSkill.strength, "Long Sword");
-                Weapon rapier = new Weapon(Die.d6, EquipmentSkill.dextrious, "Rapier");
-                Weapon staff = new Weapon(Die.d6, EquipmentSkill.constitution, "Staff");
-                Weapon longbow = new Weapon(Die.d6, EquipmentSkill.dextrious, "Long Bow");
+                Armor headd1 = new Armor(Die.d6, ArmorType.head, EquipmentSkill.dextrious, "Hood");
+                Armor torsod1 = new Armor(Die.d6, ArmorType.torso, EquipmentSkill.dextrious, "Vest");
 
+                Armor headc1 = new Armor(Die.d6, ArmorType.head, EquipmentSkill.constitution, "Hat");
+                Armor torsoc1 = new Armor(Die.d6, ArmorType.torso, EquipmentSkill.constitution, "Robe");
 
-                List<Item> list = new List<Item>();
+                Weapon club2 = new Weapon(Die.d8, EquipmentSkill.simple, "Club");
+                Weapon shortsword2 = new Weapon(Die.d8, EquipmentSkill.strength, "Sword");
+                Weapon dagger2 = new Weapon(Die.d8, EquipmentSkill.dextrious, "Dagger");
+                Weapon wand2 = new Weapon(Die.d8, EquipmentSkill.constitution, "Wand");
+
+                Armor leg2 = new Armor(Die.d8, ArmorType.leg, EquipmentSkill.strength, "Leggings");
+                Armor feet2 = new Armor(Die.d8, ArmorType.foot, EquipmentSkill.simple, "Boots");
+
+                Armor head2 = new Armor(Die.d8, ArmorType.head, EquipmentSkill.strength, "Helment");
+                Armor torso2 = new Armor(Die.d8, ArmorType.torso, EquipmentSkill.strength, "Chest Plate");
+
+                Armor headd2 = new Armor(Die.d8, ArmorType.head, EquipmentSkill.dextrious, "Hood");
+                Armor torsod2 = new Armor(Die.d8, ArmorType.torso, EquipmentSkill.dextrious, "Vest");
+
+                Armor headc2 = new Armor(Die.d8, ArmorType.head, EquipmentSkill.constitution, "Hat");
+                Armor torsoc2 = new Armor(Die.d8, ArmorType.torso, EquipmentSkill.constitution, "Robe");
+
+                Weapon club3 = new Weapon(Die.d10, EquipmentSkill.simple, "Club");
+                Weapon shortsword3 = new Weapon(Die.d10, EquipmentSkill.strength, "Sword");
+                Weapon dagger3 = new Weapon(Die.d10, EquipmentSkill.dextrious, "Dagger");
+                Weapon wand3 = new Weapon(Die.d10, EquipmentSkill.constitution, "Wand");
+
+                Armor leg3 = new Armor(Die.d10, ArmorType.leg, EquipmentSkill.strength, "Leggings");
+                Armor feet3 = new Armor(Die.d10, ArmorType.foot, EquipmentSkill.simple, "Boots");
+
+                Armor head3 = new Armor(Die.d10, ArmorType.head, EquipmentSkill.strength, "Helment");
+                Armor torso3 = new Armor(Die.d10, ArmorType.torso, EquipmentSkill.strength, "Chest Plate");
+
+                Armor headd3 = new Armor(Die.d10, ArmorType.head, EquipmentSkill.dextrious, "Hood");
+                Armor torsod3 = new Armor(Die.d10, ArmorType.torso, EquipmentSkill.dextrious, "Vest");
+
+                Armor headc3 = new Armor(Die.d10, ArmorType.head, EquipmentSkill.constitution, "Hat");
+                Armor torsoc3 = new Armor(Die.d10, ArmorType.torso, EquipmentSkill.constitution, "Robe");
+
+                Dictionary<string, List<Item>> list = new Dictionary<string, List<Item>>();
+                List<Item> list1 = new List<Item>();
+                List<Item> list2 = new List<Item>();
+                List<Item> list3 = new List<Item>();
+                List<Item> list4 = new List<Item>();
+                list1.Add(club);
+                list1.Add(shortsword);
+                list1.Add(dagger);
+                list1.Add(wand);
+                list1.Add(head);
+                list1.Add(torso);
+                list1.Add(leg);
+                list1.Add(feet);
+                list1.Add(headd);
+                list1.Add(torsod);
+                list1.Add(headc);
+                list1.Add(torsoc);
+                list2.Add(club1);
+                list2.Add(shortsword1);
+                list2.Add(dagger1);
+                list2.Add(wand1);
+                list2.Add(head1);
+                list2.Add(torso1);
+                list2.Add(leg1);
+                list2.Add(feet1);
+                list2.Add(headd1);
+                list2.Add(torsod1);
+                list2.Add(headc1);
+                list2.Add(torsoc1);
+                list3.Add(club2);
+                list3.Add(shortsword2);
+                list3.Add(dagger2);
+                list3.Add(wand2);
+                list3.Add(head2);
+                list3.Add(torso2);
+                list3.Add(leg2);
+                list3.Add(feet2);
+                list3.Add(headd2);
+                list3.Add(torsod2);
+                list3.Add(headc2);
+                list3.Add(torsoc2);
+                list4.Add(club3);
+                list4.Add(shortsword3);
+                list4.Add(dagger3);
+                list4.Add(wand3);
+                list4.Add(head3);
+                list4.Add(torso3);
+                list4.Add(leg3);
+                list4.Add(feet3);
+                list4.Add(headd3);
+                list4.Add(torsod3);
+                list4.Add(headc3);
+                list4.Add(torsoc3);
+
+                list.Add("Crude", list1);
+                list.Add("Common", list2);
+                list.Add("Rare", list3);
+                list.Add("Legendary", list4);
                 
+                serializer.Serialize(writer, locations);
             }
 
-            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\LocationConfig.txt"))
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Converters.Add(new JavaScriptDateTimeConverter());
                 serializer.NullValueHandling = NullValueHandling.Ignore;
+                Location Tavern = new Location("Tavern", Population.Passive, _levels: new Location[] { }, _entities: new List<Entity>(), _items: new List<Item>());
 
-                IEnumerable<Location> _locations = new Location[] { };
-                List<Entity> entities = new List<Entity>();
-                List<Item> items = new List<Item>();
+                Location Crypt = new Location("Dungeon", Population.Aggressive, _levels: new Location[] { }, _entities: new List<Entity>(), _items: new List<Item>());
 
-                Location Bedrooms = new Location("Bedrooms", Region.Hills, Population.Passive, null, entities, items);
-                IEnumerable<Location> innsLocations = new Location[] { Bedrooms };
-                Location Inn = new Location("Inn", Region.Hills, Population.Passive, innsLocations, entities, items);
-
-                List<Entity> tentities = new List<Entity>(3) { };
-                Location Tavern = new Location("Tavern", Region.Hills, Population.Passive, _locations, entities, items);
-
-                List<Entity> centities = new List<Entity>(3) { };
-                Location Crypt = new Location("Crypt", Region.Hills, Population.Aggressive, _locations, entities, items);
-
-                Dictionary<string, Location> locations = new Dictionary<string, Location>();
-                locations.Add("inn", Inn);
-                locations.Add("tavern", Tavern);
-                locations.Add("crypt", Crypt);
+                List<Location> locations = new List<Location>();
+                locations.Add(Tavern);
+                locations.Add(Crypt);
 
                 serializer.Serialize(writer, locations);
+
             }
             /*//Read "CharacterConfig.txt"
             using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
@@ -160,6 +221,7 @@ namespace ZuccBot.ZuccRPG
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
             }*/
+            ctx.Message.DeleteAsync();
             return Task.CompletedTask;
         }
 
@@ -175,7 +237,7 @@ namespace ZuccBot.ZuccRPG
                 //List the name of the current iterated player
                 await ctx.RespondAsync($"{_member.DisplayName}\n");
             }
-            
+            await ctx.Message.DeleteAsync();
         }
 
         //**TRAVEL**
@@ -208,7 +270,7 @@ namespace ZuccBot.ZuccRPG
                 //If an exception was thrown it asks if the player created a character
                 await ctx.RespondAsync($"A serious problem has occurred. {ctx.User.Mention} may __NOT__ have created a character or the location specified was null.");
             }
-            
+            await ctx.Message.DeleteAsync();
         }
 
         /*[Command(commandPrefix + "LocationInformation"), Aliases(commandPrefix + "locInfo", commandPrefix + "hereinfo", commandPrefix + "infohere", commandPrefix + "infoHere", commandPrefix + "LocInfo")]
@@ -261,6 +323,7 @@ namespace ZuccBot.ZuccRPG
                 //For every accessible location there is, print it's name
                 await ctx.RespondAsync($"\n`{locations[i].name}`");
             }
+            await ctx.Message.DeleteAsync();
         }
 
         //**NOTE** This command is subject to a lot of change
@@ -339,6 +402,7 @@ namespace ZuccBot.ZuccRPG
                 {
                     await ctx.RespondAsync($"There are no entities to attack in `{users[ctx.Member].location.name}`.");
                 }
+                await ctx.Message.DeleteAsync();
             }
             catch
             {

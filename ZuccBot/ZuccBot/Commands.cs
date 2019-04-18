@@ -21,6 +21,7 @@ namespace ZuccBot
         {
             await ctx.RespondAsync($"ZuccBot is turning off.");
             Environment.Exit(420);//huehuehuehue
+            await ctx.Message.DeleteAsync();
         }  
 
         //Basic hi commmand
@@ -46,6 +47,7 @@ namespace ZuccBot
         public async Task columbia(CommandContext ctx)
         {
             await ctx.RespondAsync($"Hey, {ctx.User.Mention}, here's a link to Columbia's website: https://www.gocolumbia.edu/");
+            await ctx.Message.DeleteAsync();
         }
 
         /*What time did the mentioned user join
@@ -65,6 +67,7 @@ namespace ZuccBot
             {
                 await ctx.RespondAsync($"{member.DisplayName} joined on {date}");
             }
+            await ctx.Message.DeleteAsync();
         }
 
         /*Thank the Bot
@@ -76,6 +79,7 @@ namespace ZuccBot
             // typing indicator to make Mr. Zuckerburg feel more human.
             //await ctx.TriggerTypingAsync();
             await ctx.RespondAsync($"Your welcome!");
+
         }
 
         /*
@@ -93,6 +97,7 @@ namespace ZuccBot
         {
             await ctx.Guild.GrantRoleAsync(member, role);
             await ctx.RespondAsync($"Granted {role} to {member.DisplayName}.");
+            await ctx.Message.DeleteAsync();
         }
 
         /* Revoke a Role from a user.
@@ -103,6 +108,7 @@ namespace ZuccBot
         {
             await ctx.Guild.RevokeRoleAsync(member, role, reason);
             await ctx.RespondAsync($"Revoked {member.DisplayName}'s role as {role} because of ''{reason}''.");
+            await ctx.Message.DeleteAsync();
         }
 
 
@@ -114,6 +120,7 @@ namespace ZuccBot
         {
             await ctx.Guild.RemoveMemberAsync(member);//Removing the mentioned user from the Guild.
             await ctx.RespondAsync($"Kicked {member.DisplayName} from {ctx.Guild}.");//Just the Bot telling everyone what it is doing
+            await ctx.Message.DeleteAsync();
         }
 
         [Command("banUser"), Aliases("ban", "Ban"), RequirePermissions(Permissions.Administrator), Description("Used to BAN mentioned users for the set amount of days"), Hidden]
@@ -121,6 +128,7 @@ namespace ZuccBot
         {
             await ctx.Guild.BanMemberAsync(member, days, reason);
             await ctx.RespondAsync($"Banned {member} from {ctx.Guild} for ''{reason}''. The Ban will be lifted {days} days from now.");
+            await ctx.Message.DeleteAsync();
         }
 
         [Command("retrieveBans"), Aliases("findBans", "bans", "Bans", "FindBans"), Description("Lists all bans.")]
@@ -128,6 +136,7 @@ namespace ZuccBot
         {
             await ctx.RespondAsync($"List of Bans from {ctx.Guild} : ");//Just the bot telling everyone what it is posting.
             await ctx.Guild.GetBansAsync();
+            await ctx.Message.DeleteAsync();
         }
 
         //Due to a problem with connecting a mentioned user to a channel and muting them from that channel, these mute commands do not work
@@ -137,6 +146,7 @@ namespace ZuccBot
         {
             await member.SetMuteAsync(true, reason);//This is incorrect because I only mentioned the user and not in what channel they are being mute.
             await ctx.RespondAsync($"Muted {member.DisplayName} for '{reason}'");//Just the bot telling everyone what it's doing.
+            await ctx.Message.DeleteAsync();
         }
 
         //Broken
@@ -145,6 +155,7 @@ namespace ZuccBot
         {
             await member.SetMuteAsync(false, reason);//Not sure how to reference the channel and the player and unmute them in that.
             await ctx.RespondAsync($"Unmuted {member.DisplayName}.");//Just the bot telling everyone what it's doing.
+            await ctx.Message.DeleteAsync();
         }
     }
 }
