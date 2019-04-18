@@ -46,10 +46,10 @@ namespace Main.ZuccRPG.RPGassets
                     break;
 
                 case Population.Aggressive:
-                    if (!entities.Exists(x => x is Enemy))
+                    /*if (!entities.Exists(x => x is Enemy))
                     {
 
-                    }
+                    }*/
                     break;
             }
         }

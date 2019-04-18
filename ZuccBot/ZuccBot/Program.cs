@@ -51,8 +51,7 @@ namespace ZuccBot
 
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                //What could this be UWU
-                //I chose the period because it's easy to select on a phone and also one of the easiest buttons to reach from the bottom right side of the keyboard
+                //Ask me anything
                 StringPrefix = "."
             });
 

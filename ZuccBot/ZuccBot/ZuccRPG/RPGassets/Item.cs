@@ -32,7 +32,7 @@ namespace Main.ZuccRPG.RPGassets
 
     public class Item
     {
-        string name;//Used when the item is referenced in chat
+        public string name;//Used when the item is referenced in chat
 
         public Item(string _name)
         {
@@ -42,8 +42,8 @@ namespace Main.ZuccRPG.RPGassets
 
     public class Weapon : Item
     {
-        Die die;
-        EquipmentSkill skill;
+        public Die die;
+        public EquipmentSkill skill;
 
         public Weapon(Die _die, EquipmentSkill _skill, string _name) : base(_name)
         {
@@ -54,9 +54,9 @@ namespace Main.ZuccRPG.RPGassets
 
     public class Armor : Item
     {
-        Die defense;
-        ArmorType armor;
-        EquipmentSkill skill;
+        public Die defense;
+        public ArmorType armor;
+        public EquipmentSkill skill;
 
         public Armor(Die _defense, ArmorType _armor, EquipmentSkill _skill, string _name) : base(_name)
         {

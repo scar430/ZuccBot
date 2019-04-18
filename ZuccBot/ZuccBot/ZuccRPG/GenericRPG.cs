@@ -35,9 +35,9 @@ namespace ZuccBot.ZuccRPG
         //Command : rpgCreateCharacter
         //This function is subject to a lot of change.
         [Command(commandPrefix + "CreateCharacter"), Aliases(commandPrefix + "cc", commandPrefix + "createCharacter", commandPrefix + "createcharacter", commandPrefix + "newcharacter", commandPrefix + "newchar", commandPrefix + "newCharacter", commandPrefix + "createchar")]
-        public Task CreateCharacter(CommandContext ctx)
+        public async Task CreateCharacter(CommandContext ctx)
         {
-            using (FileStream file = File.OpenWrite(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\RegionConfigs\\PlainsConfigs\\LocationConfig.txt"))
+            /*using (FileStream file = File.OpenWrite(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
             {
                 //More of a debug feature, jsut checks what your doing and can log what your accessing
                 ITraceWriter tcr = new MemoryTraceWriter();
@@ -48,7 +48,7 @@ namespace ZuccBot.ZuccRPG
                 JsonConvert.SerializeObject(locations);
             }
 
-            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\DropConfig.txt"))
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\ItemConfig.txt"))
             using (JsonWriter writer = new JsonTextWriter(sw))
             {
                 JsonSerializer serializer = new JsonSerializer();
@@ -182,7 +182,22 @@ namespace ZuccBot.ZuccRPG
                 list.Add("Rare", list3);
                 list.Add("Legendary", list4);
                 
-                serializer.Serialize(writer, locations);
+                serializer.Serialize(writer, list);
+            }
+
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\test.txt"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                Item test = new Item("test");
+
+                List<string> items = new List<string>();
+                items.Add("test");
+
+                serializer.Serialize(writer, items);
             }
 
             using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
@@ -200,9 +215,27 @@ namespace ZuccBot.ZuccRPG
                 locations.Add(Crypt);
 
                 serializer.Serialize(writer, locations);
-
             }
-            /*//Read "CharacterConfig.txt"
+
+            using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\EntityConfig.txt"))
+            using (JsonWriter writer = new JsonTextWriter(sw))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                CombatEntity goblin = new CombatEntity(Race.Goblin, Class.Knight, 10, 2, 3, 0, "Goblin", _items: new List<Item>());
+                CombatEntity orc = new CombatEntity(Race.Orc, Class.Knight, 25, 3, 2, 1, "Orc", _items: new List<Item>());
+                CombatEntity troll = new CombatEntity(Race.Troll, Class.Knight, 50, 5, 2, 0, "Troll", _items: new List<Item>());
+                List<CombatEntity> entities = new List<CombatEntity>();
+                entities.Add(goblin);
+                entities.Add(orc);
+                entities.Add(troll);
+
+                serializer.Serialize(writer, entities);
+            }*/
+
+            //Read "CharacterConfig.txt"
             using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
             {
                 //More of a debug feature, jsut checks what your doing and can log what your accessing
@@ -220,9 +253,9 @@ namespace ZuccBot.ZuccRPG
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
-            }*/
-            ctx.Message.DeleteAsync();
-            return Task.CompletedTask;
+            }
+            await ctx.Message.DeleteAsync();
+            await Task.CompletedTask;
         }
 
         //**LIST PLAYERS**

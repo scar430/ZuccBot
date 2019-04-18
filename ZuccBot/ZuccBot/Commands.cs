@@ -14,6 +14,8 @@ namespace ZuccBot
     public class Commands
     {
         
+        //Some of the commands end with deleting the message so that way you don't have constant commmand spam
+
         //This command only works for the owner's account (scar430) so if your trying to run this and it's not working then that's why.
         //Shut Down command
         [Command("ShutDown"), Aliases("off", "shutdown", "shutoff", "die", "death", "sleep"), RequireOwner, Hidden]
@@ -91,6 +93,7 @@ namespace ZuccBot
 
         /* Grant a Role to a user.
          * Command : addRole @User @Role
+         * **NOTE** The roles must be able to be mentioned by the person invoking the command, it's not just a string that's cross referenced with a list of roles.
          */
         [Command("addRole"), Aliases("role", "aRole", "addrole", "arole"), RequirePermissions(Permissions.Administrator), Description("Add a role to a player."), Hidden]
         public async Task addRole(CommandContext ctx, DiscordMember member, DiscordRole role)
