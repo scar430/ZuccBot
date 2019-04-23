@@ -16,7 +16,8 @@ using ZuccBot;
 using System.Runtime.Serialization.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
-using Main.ZuccRPG.RPGassets;
+using ZuccBot.ZuccRPG.RPGassets;
+using System.Data.SQLite;
 
 namespace ZuccBot.ZuccRPG
 {
@@ -24,17 +25,15 @@ namespace ZuccBot.ZuccRPG
 
     public class GenericRPG
     {
-        const string commandPrefix = "rpg";//All commands relating to the GenericRPG game are prefixed with rpg, this helps stop command clutter
+        const string commandPrefix = "rpg>";//All commands relating to the GenericRPG game are prefixed with rpg, this helps stop command clutter
 
         //These two lists may be temporary
-        List<Location> locations = new List<Location>();//All the locations in this world.
-
-        Dictionary<DiscordMember, Entity> users = new Dictionary<DiscordMember, Entity>();//Dictionary<Key, Value> (It's basically a HashMap from Java) that is used to pair up Discord Users with their character
+        public List<Location> locations;//All the locations in this world.
 
         //**Create Character**
         //Command : rpgCreateCharacter
         //This function is subject to a lot of change.
-        [Command(commandPrefix + "CreateCharacter"), Aliases(commandPrefix + "cc", commandPrefix + "createCharacter", commandPrefix + "createcharacter", commandPrefix + "newcharacter", commandPrefix + "newchar", commandPrefix + "newCharacter", commandPrefix + "createchar")]
+        [Command(commandPrefix + "new")]
         public async Task CreateCharacter(CommandContext ctx)
         {
             /*using (FileStream file = File.OpenWrite(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
@@ -206,9 +205,9 @@ namespace ZuccBot.ZuccRPG
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Converters.Add(new JavaScriptDateTimeConverter());
                 serializer.NullValueHandling = NullValueHandling.Ignore;
-                Location Tavern = new Location("Tavern", Population.Passive, _levels: new Location[] { }, _entities: new List<Entity>(), _items: new List<Item>());
+                Location Tavern = new Location("Tavern", Population.Passive, _levels: new Location[] { }, _entities: new Dictionary<string[], Entity>(), _items: new List<Item>());
 
-                Location Crypt = new Location("Dungeon", Population.Aggressive, _levels: new Location[] { }, _entities: new List<Entity>(), _items: new List<Item>());
+                Location Crypt = new Location("Dungeon", Population.Aggressive, _levels: new Location[] { }, _entities: new Dictionary<string[], Entity>(), _items: new List<Item>());
 
                 List<Location> locations = new List<Location>();
                 locations.Add(Tavern);
@@ -224,9 +223,9 @@ namespace ZuccBot.ZuccRPG
                 serializer.Converters.Add(new JavaScriptDateTimeConverter());
                 serializer.NullValueHandling = NullValueHandling.Ignore;
 
-                CombatEntity goblin = new CombatEntity(Race.Goblin, Class.Knight, 10, 2, 3, 0, "Goblin", _items: new List<Item>());
-                CombatEntity orc = new CombatEntity(Race.Orc, Class.Knight, 25, 3, 2, 1, "Orc", _items: new List<Item>());
-                CombatEntity troll = new CombatEntity(Race.Troll, Class.Knight, 50, 5, 2, 0, "Troll", _items: new List<Item>());
+                CombatEntity goblin = new CombatEntity(RPGassets.Race.Goblin, Class.Knight, 10, 2, 3, 0, "Goblin", _items: new List<Item>());
+                CombatEntity orc = new CombatEntity(RPGassets.Race.Orc, Class.Knight, 25, 3, 2, 1, "Orc", _items: new List<Item>());
+                CombatEntity troll = new CombatEntity(RPGassets.Race.Troll, Class.Knight, 50, 5, 2, 0, "Troll", _items: new List<Item>());
                 List<CombatEntity> entities = new List<CombatEntity>();
                 entities.Add(goblin);
                 entities.Add(orc);
@@ -234,6 +233,24 @@ namespace ZuccBot.ZuccRPG
 
                 serializer.Serialize(writer, entities);
             }*/
+
+            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
+            {
+                if(locations == null)
+                {
+                    //More of a debug feature, jsut checks what your doing and can log what your accessing
+                    ITraceWriter tcr = new MemoryTraceWriter();
+
+                    //Is gonna use JSON magic on whatever we are targeting with the current file stream
+                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                    //print the memory tracer
+                    Console.WriteLine(tcr);
+
+                    //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
+                    locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
+                }
+            }
 
             //Read "CharacterConfig.txt"
             using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
@@ -261,26 +278,51 @@ namespace ZuccBot.ZuccRPG
         //**LIST PLAYERS**
         //Command : rpgPlayers
         //Lists all of the players who are partaking in the rpg (list of players is limited to server.)
-        [Command(commandPrefix + "Players")]
+        [Command(commandPrefix + "players")]
         public async Task Players(CommandContext ctx)
         {
-            //For every member who has created an avatar...
-            foreach (DiscordMember _member in users.Keys)
+            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\PlayersConfig.txt"))
             {
-                //List the name of the current iterated player
-                await ctx.RespondAsync($"{_member.DisplayName}\n");
+                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
+
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current 
+
+                Dictionary<DiscordUser, CombatEntity> characters = (Dictionary<DiscordUser, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<DiscordUser, CombatEntity>));
+                //For every member who has created an avatar...
+                foreach (DiscordUser user in characters.Keys)
+                {
+                    //List the name of the current iterated player
+                    await ctx.RespondAsync($"{user.Username}\n");
+                }
             }
             await ctx.Message.DeleteAsync();
         }
 
         //**TRAVEL**
         //Command : rpgGoTo specifiedLocation
-        [Command(commandPrefix + "GoTo"), Aliases(commandPrefix + "goto", commandPrefix + "go", commandPrefix + "to")]
+        [Command(commandPrefix + "go")]
         public async Task GoTo(CommandContext ctx, string location)
         {
             //Try moving the players character, if there is an exception catch it.
             try
             {
+                using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
+                {
+                    if (locations == null)
+                    {
+                        //More of a debug feature, jsut checks what your doing and can log what your accessing
+                        ITraceWriter tcr = new MemoryTraceWriter();
+
+                        //Is gonna use JSON magic on whatever we are targeting with the current file stream
+                        JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                        //print the memory tracer
+                        Console.WriteLine(tcr);
+
+                        //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
+                        locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
+                    }
+                }
                 //Look through every location...
                 foreach (Location _location in locations)
                 {
@@ -306,31 +348,90 @@ namespace ZuccBot.ZuccRPG
             await ctx.Message.DeleteAsync();
         }
 
-        /*[Command(commandPrefix + "LocationInformation"), Aliases(commandPrefix + "locInfo", commandPrefix + "hereinfo", commandPrefix + "infohere", commandPrefix + "infoHere", commandPrefix + "LocInfo")]
+        [Command(commandPrefix + "here")]
         public async Task LocationInformation(CommandContext ctx)
         {
             try
             {
-                //Being the list by stating what location this information pertains to and list it's name.
-                await ctx.RespondAsync($"Information on `{users[ctx.Member].location.name}`: \n**Name** : \n`{users[ctx.Member].location.name}`\n");
-
-                //If there are entities in the location...
-                if (users[ctx.Member].location.entities != null && users[ctx.Member].location.entities.Count > 0)
+                using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
                 {
-                    //Begin the list of entities by stating it is entities
-                    await ctx.RespondAsync($"**Entities** : \n");
-
-                    //Look through all the locations
-                    foreach (Location _location in locations)
+                    if (locations == null)
                     {
-                        //If the location is the one the user is in...
-                        if (_location.name == users[ctx.Member].location.name)
+                        //More of a debug feature, jsut checks what your doing and can log what your accessing
+                        ITraceWriter tcr = new MemoryTraceWriter();
+
+                        //Is gonna use JSON magic on whatever we are targeting with the current file stream
+                        JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                        //print the memory tracer
+                        Console.WriteLine(tcr);
+
+                        //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
+                        locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
+                    }
+                }
+                foreach (Location location in locations)
+                {
+                    using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\PlayersConfig.txt"))
+                    {
+                        ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
+
+                        JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current 
+
+                        Dictionary<DiscordUser, CombatEntity> characters = (Dictionary<DiscordUser, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<DiscordUser, CombatEntity>));
+
+                        if (location.entities.ContainsValue(characters[ctx.User]))
                         {
-                            //For every entity at the location...
-                            foreach (Entity _entity in users[ctx.Member].location.entities)
+                            //Being the list by stating what location this information pertains to and list it's name.
+                            await ctx.RespondAsync($"Information on `{location.name}`: \n**Name** : \n`{location.name}`\n");
+
+                            //If there are entities in the location...
+                            if (location.entities != null && location.entities.Count > 0)
                             {
-                                //Print out the entity's name
-                                await ctx.RespondAsync($"`{_entity.name}`\n");
+                                //Begin the list of entities by stating it is entities
+                                await ctx.RespondAsync($"**Entities** : \n");
+
+                                //For every entity at the location...
+                                foreach (Entity _entity in location.entities.Values)
+                                {
+                                    //Print out the entity's name
+                                    await ctx.RespondAsync($"`{_entity.name}`\n");
+                                }
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            foreach (Location subLocation in location.levels)
+                            {
+                                if (subLocation.entities.ContainsValue(characters[ctx.User]))
+                                {
+                                    //Being the list by stating what location this information pertains to and list it's name.
+                                    await ctx.RespondAsync($"Information on `{subLocation.name}`, located in `{location.name}`: \n**Name** : \n`{subLocation.name}`\n");
+
+                                    //If there are entities in the location...
+                                    if (subLocation.entities != null && subLocation.entities.Count > 0)
+                                    {
+                                        //Begin the list of entities by stating it is entities
+                                        await ctx.RespondAsync($"**Entities** : \n");
+
+                                        //For every entity at the location...
+                                        foreach (Entity _entity in subLocation.entities.Values)
+                                        {
+                                            //Print out the entity's name
+                                            await ctx.RespondAsync($"`{_entity.name}`\n");
+                                        }
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                     }
@@ -341,14 +442,32 @@ namespace ZuccBot.ZuccRPG
                 //If an exception was thrown, the player probably didn't create a character
                 await ctx.RespondAsync($"A serious problem has occurred. The user has probably __NOT__ created a character yet.");
             }
-        }*/
+        }
 
         //**LIST LOCATIONS**
         //Command : rpgWhatLocations
         //This is usually used to find locations to travel to with 'rpgGoTo'
-        [Command(commandPrefix + "WhatLocations")]
+        [Command(commandPrefix + "locations")]
         public async Task WhatLocations(CommandContext ctx)
         {
+            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
+            {
+                if (locations == null)
+                {
+                    //More of a debug feature, jsut checks what your doing and can log what your accessing
+                    ITraceWriter tcr = new MemoryTraceWriter();
+
+                    //Is gonna use JSON magic on whatever we are targeting with the current file stream
+                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                    //print the memory tracer
+                    Console.WriteLine(tcr);
+
+                    //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
+                    locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
+                }
+            }
+
             //The Bot announces it is listing something
             await ctx.RespondAsync($"Here's a list of locations for {ctx.User.Mention} : ");
             for (int i = 0; i < (locations.Count); i++)

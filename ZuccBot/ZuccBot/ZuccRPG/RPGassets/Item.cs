@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Main.ZuccRPG.RPGassets
+namespace ZuccBot.ZuccRPG.RPGassets
 {
     public enum Die
     {

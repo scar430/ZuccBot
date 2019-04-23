@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using ZuccBot.ZuccRPG;
+using ZuccBot.ZuccRPG.RPGassets;
 using DSharpPlus.EventArgs;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity;
@@ -15,6 +16,8 @@ using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using System.Data.SQLite;
+using Newtonsoft.Json.Converters;
 
 //**NOTE** .NET Core 2.0 is the recommended target framework. (I don't know how your opening this project)
 //**NOTE** There may or may not be a 'README.txt', please check, if 'README.txt' isn't in the main folder (folder that contains ZuccBot.sln) then ignore this.
@@ -30,6 +33,7 @@ namespace ZuccBot
         {
             Console.WriteLine("ZuccBot is awake.");
             Console.WriteLine(Directory.GetCurrentDirectory());
+
             //Rev this bad boy up (▀̿Ĺ̯▀̿ ̿)
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -52,22 +56,22 @@ namespace ZuccBot
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 //Ask me anything
-                StringPrefix = "."
+                StringPrefix = ">"
             });
 
-            //This basically detects reactions, it's subscribing to a Task called 'Discord_ReactionAdded', it is listed below...
+            //A list of events the client is subscribed to.
             discord.MessageReactionAdded += Discord_ReactionAdded;
             discord.MessageCreated += Discord_MessageCreated;
             discord.MessageDeleted += Discord_MessageDeleted;
             discord.GuildMemberAdded += Discord_MemberAdded;
             discord.GuildMemberRemoved += Discord_MemberRemoved;
 
-            //Command subscriptions
+            //Valid Commands.
             commands.RegisterCommands<Commands>();//General commands (banning, kicking, etc.)
             commands.RegisterCommands<GenericRPG>();//RPG commands (Create characters, attack entities, etc.)
 
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
-            await Task.Delay(-1);//Wait infinitely. Bot purgatory. >:)
+            await Task.Delay(-1);//Wait infinitely. Bot purgatory.
         }
 
         //Logs of players being removed and added are attributed to the default channel
@@ -83,7 +87,7 @@ namespace ZuccBot
                     string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Guild.GetDefaultChannel().Name.ToString() + " | " + "**User Removed** : " + e.Member.Username.ToString();
                     string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Member.Username.ToString() + " | " + "User Removed : " + e.Member.Username.ToString();
 
-                    if (System.IO.File.Exists(path) == false)
+                    if (File.Exists(path) == false)
                     {
                         Directory.CreateDirectory(path);
 
@@ -484,6 +488,9 @@ namespace ZuccBot
 
                 //**NOTE**There were problems with constants and switch statements and emojis, that's why this extremely convulated if statement exists
                 //Check if the message embed is the same as the first listed embed in the txt file. (the embeds are listed on the txt file in the correct order they should be displayed, e.g. the first listed embed is the first embed that is called)
+
+                CombatEntity character = new CombatEntity(ZuccRPG.RPGassets.Race.Dwarf, Class.Knight, 1, 0, 0, 0, e.User.Mention, null);
+
                 if (e.Message.Embeds[0].Title == embed[0].Title)
                 {
                     if (e.Message.Author.IsCurrent == e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot)
@@ -493,17 +500,20 @@ namespace ZuccBot
                         {
                             if (e.Emoji == DiscordEmoji.FromName(discord, ":man:"))
                             {
-
+                                character.race = ZuccRPG.RPGassets.Race.Human;
+                                character.constitution += 1;
                             }
                             else
                                 if (e.Emoji == DiscordEmoji.FromName(discord, ":leaves:"))
                             {
-
+                                character.race = ZuccRPG.RPGassets.Race.Elf;
+                                character.dexterity += 1;
                             }
                             else
                                 if (e.Emoji == DiscordEmoji.FromName(discord, ":pick:"))
                             {
-
+                                character.race = ZuccRPG.RPGassets.Race.Dwarf;
+                                character.strength += 1;
                             }
                             //We're gonna flip the paginated embed to the next page
                             var msg = e.Message.ModifyAsync($"", embed[1]);
@@ -511,9 +521,9 @@ namespace ZuccBot
                             //Change the reactions to the appropiate ones for the next page
                             await e.Message.DeleteAllReactionsAsync();
 
-                            //These emojis should correspond with the choices on the next page (page 2 / element 1)
+                            //These emojis should correspond with the choices on the next page (page 2 or element 1)
                             await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":crossed_swords:"));
-                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":bow_and_arrow:"));
+                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":alembic:"));
                             await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":dagger:"));
 
                             //The task was completed successfully and needs to be closed
@@ -521,12 +531,12 @@ namespace ZuccBot
                         }
                         else
                         {
-                            await Task.Delay(100);
+                            await Task.Delay(1000);
                         }
                     }
                     else
                     {
-                        await Task.Delay(100);
+                        await Task.Delay(1000);
                     }
                 }
                 else
@@ -534,24 +544,62 @@ namespace ZuccBot
                 {
                     if (e.Message.Author.IsCurrent == e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot)
                     {
-                        if (e.Emoji == DiscordEmoji.FromName(discord, ":crossed_swords:") || e.Emoji == DiscordEmoji.FromName(discord, ":bow_and_arrow:") || e.Emoji == DiscordEmoji.FromName(discord, ":dagger:"))
+                        if (e.Emoji == DiscordEmoji.FromName(discord, ":crossed_swords:") || e.Emoji == DiscordEmoji.FromName(discord, ":alembic:") || e.Emoji == DiscordEmoji.FromName(discord, ":dagger:"))
                         {
                             if (e.Emoji == DiscordEmoji.FromName(discord, ":crossed_swords:"))
                             {
-
+                                character.@class = Class.Knight;
+                                character.strength += 1;
                             }
                             else
-                                if (e.Emoji == DiscordEmoji.FromName(discord, ":bow_and_arrow:"))
+                                if (e.Emoji == DiscordEmoji.FromName(discord, ":alembic:"))
                             {
-
+                                character.@class = Class.Mage;
+                                character.constitution += 1;
                             }
                             else
                                 if (e.Emoji == DiscordEmoji.FromName(discord, ":dagger:"))
                             {
-
+                                character.@class = Class.Rouge;
+                                character.dexterity += 1;
                             }
 
-                            //Were done with this message, delete it to clear clutter
+                            if (File.Exists(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                            {
+                                using (StreamReader readCharacters = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                                {
+                                    Dictionary<DiscordUser, CombatEntity> characters = (Dictionary<DiscordUser, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<DiscordUser, CombatEntity>));
+                                    using (StreamWriter appendCharacter = File.AppendText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                                    {
+                                        JsonSerializer _serializer = new JsonSerializer();
+                                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                                        serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                                        characters.Add(e.User, character);
+
+                                        serializer.Serialize(appendCharacter, characters);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                using (StreamWriter createCharacters = File.CreateText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                                {
+                                    using (StreamReader readCharacters = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                                    {
+                                        using (StreamWriter appendCharacter = File.AppendText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                                        {
+                                            Dictionary<DiscordUser, CombatEntity> characters = new Dictionary<DiscordUser, CombatEntity>();
+
+                                            characters.Add(e.User, character);
+
+                                            serializer.Serialize(appendCharacter, characters);
+                                        }
+                                    }
+                                } 
+                            }
+
+                            //We're done with this message, delete it to clear clutter
                             await e.Message.DeleteAsync();
 
                             //The task was completed successfully and no longer needs to be active
@@ -559,17 +607,18 @@ namespace ZuccBot
                         }
                         else
                         {
-                            await Task.Delay(100);
+                            await Task.Delay(1000);
                         }
                     }
                     else
                     {
-                        await Task.Delay(100);
+                        await Task.Delay(1000);
                     }
                 }
                 else
                 {
-                    await Task.Delay(100);
+                    Console.WriteLine(e.Message.Embeds.Count.ToString());
+                    await Task.Delay(1000);
                 }
             }
         }

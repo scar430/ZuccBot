@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using DSharpPlus;
 
-namespace Main.ZuccRPG.RPGassets
+namespace ZuccBot.ZuccRPG.RPGassets
 {
     public enum Race
     {
@@ -19,7 +19,7 @@ namespace Main.ZuccRPG.RPGassets
     {
         Knight,
         Rouge,
-        Wizard
+        Mage
     }
 
     public class Entity
@@ -36,8 +36,8 @@ namespace Main.ZuccRPG.RPGassets
 
     public class CombatEntity : Entity
     {
-        Race race { get; set; }
-        Class @class { get; set; }
+        public Race race { get; set; }
+        public Class @class { get; set; }
 
         public int maxHP { get; set; }//Maximum Hit Points. This is used to stop the player and other entities from using healing items constantly to MASSIVELY buff their health
         public int curHP { get; set; }//What the current Hit Point score is at, This can not exceed the maxiumHP integer and if it reaches 0 or lower then death will occur
