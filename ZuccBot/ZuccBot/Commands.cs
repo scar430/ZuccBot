@@ -31,31 +31,38 @@ namespace ZuccBot
             await ctx.RespondAsync("", false, help);
         }*/
 
-        [Command("uHelp")]
+        /*[Command("uHelp")]
         public async Task uHelp(CommandContext ctx)
         {
+            Console.WriteLine("Started utility help.");
+
             var embed = new DiscordEmbedBuilder() { Title = "Utility Help", Description = "Help with utility commands.", Color = DiscordColor.CornflowerBlue};
 
             foreach (MemberInfo member in typeof(Commands).GetMembers())
             {
-
+                Console.WriteLine("1");
                 Attribute[] attributes = Attribute.GetCustomAttributes(member);
 
                 foreach (System.Attribute attribute in attributes)
                 {
+                    Console.WriteLine("2");
                     if (attribute is CommandAttribute)
                     {
+                        Console.WriteLine("3");
                         CommandAttribute command = (CommandAttribute)attribute;
 
                         foreach (System.Attribute _attribute in attributes)
                         {
+                            Console.WriteLine("4");
                             if (attribute is DescriptionAttribute)
                             {
+                                Console.WriteLine("5");
                                 DescriptionAttribute description = (DescriptionAttribute)attribute;
                                 embed.AddField(command.Name.ToString(), description.Description.ToString());
                             }
                             else
                             {
+                                Console.WriteLine("6");
                                 embed.AddField(command.Name.ToString(), "No description available.");
                             }
                         }
@@ -67,8 +74,10 @@ namespace ZuccBot
 
             await ctx.RespondAsync("", false, utilityEmbed);
 
+            Console.WriteLine("Embed has sent.");
+
             await Task.CompletedTask;
-        }
+        }*/
 
         //This command only works for the owner's account (scar430) so if your trying to run this and it's not working then that's why.
         //Shut Down command

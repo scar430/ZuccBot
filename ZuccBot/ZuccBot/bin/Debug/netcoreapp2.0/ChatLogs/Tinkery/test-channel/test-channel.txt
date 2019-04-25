@@ -175,3 +175,8 @@ Date : 4/23/2019 2:21:33 PM | Guild : Tinkery | Channel : test-channel | User : 
 Date : 4/23/2019 2:25:25 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">rpg>here"
 Date : 4/23/2019 2:27:38 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">rpg>here"
 Date : 4/23/2019 2:27:45 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">rpg>here"
+Date : 4/25/2019 12:08:55 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">uHelp"
+Date : 4/25/2019 12:10:17 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">uHelp"
+Date : 4/25/2019 12:10:29 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">uHelp"
+Date : 4/25/2019 12:11:10 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">uHelp"
+Date : 4/25/2019 12:12:25 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">uHelp"

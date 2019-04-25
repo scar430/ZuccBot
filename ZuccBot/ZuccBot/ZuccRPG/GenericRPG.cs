@@ -499,7 +499,7 @@ namespace ZuccBot.ZuccRPG
             await ctx.Message.DeleteAsync();
         }
 
-        //**NOTE** This command is subject to a lot of change
+        //**NOTE TO SELF** REWRITE LOCATIONS AND ENTITIES.
         //**ATTACK**
         //Command : rpgAttack
         //Used to attack specified entities in the players current location
@@ -509,73 +509,84 @@ namespace ZuccBot.ZuccRPG
             //In case of exceptions...
             try
             {
-                if (users[ctx.Member].location.entities != null && users[ctx.Member].location.entities.Count > 0)
+                using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + ctx.Channel.Guild.Name + "\\Players.txt"))
                 {
-                    foreach (Location _location in locations)
+                    //More of a debug feature, jsut checks what your doing and can log what your accessing
+                    ITraceWriter tcr = new MemoryTraceWriter();
+
+                    //Is gonna use JSON magic on whatever we are targeting with the current file stream
+                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                    Dictionary<string, CombatEntity> users = (Dictionary<string, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<string, CombatEntity>));
+
+                    if (users[ctx.User.Username].location.entities != null && users[ctx.Member].location.entities.Count > 0)
                     {
-                        if (_location.name == users[ctx.Member].location.name)
+                        foreach (Location _location in locations)
                         {
-                            foreach (Entity _entity in users[ctx.Member].location.entities)
+                            if (_location.name == users[ctx.Member].location.name)
                             {
-                                if (_entity is CombatEntity)
+                                foreach (Entity _entity in users[ctx.Member].location.entities)
                                 {
-                                    if (_entity.name == name)
+                                    if (_entity is CombatEntity)
                                     {
-                                        CombatEntity enemy = (CombatEntity)_entity;
-                                        CombatEntity player = (CombatEntity)users[ctx.Member];
-
-                                        //**PLAYER OFFENDER, ENTITY DEFENDER**
-                                        //Alert that displays an offending party and defending party.
-                                        await ctx.RespondAsync($"{ctx.User.Mention} is attacking `{_entity.name}` in `{users[ctx.Member].location.name}`.");
-                                        await ctx.TriggerTypingAsync();
-
-                                        //Reduce the defending party's health value by the offending party's damage value
-                                        enemy.curHP -= player.;
-
-                                        if (_entity.health <= 0)
+                                        if (_entity.name == name)
                                         {
-                                            //Alert that the offending party has slain the defending party.
-                                            await ctx.RespondAsync($"{ctx.User.Mention} has killed `{_entity.name}` at `{users[ctx.Member].location.name}`.");
-                                            _location.entities.Remove(_entity);
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            //Alert that the offending party has struck the defending party.
-                                            await ctx.RespondAsync($"{ctx.User.Mention} has attacked `{_entity.name}` for `{users[ctx.Member].damage}` damage at `{users[ctx.Member].location.name}`.");
-                                        }
+                                            CombatEntity enemy = (CombatEntity)_entity;
+                                            CombatEntity player = (CombatEntity)users[ctx.Member];
 
-                                        //**ENTITY OFFENDER, PLAYER DEFENDER**
+                                            //**PLAYER OFFENDER, ENTITY DEFENDER**
+                                            //Alert that displays an offending party and defending party.
+                                            await ctx.RespondAsync($"{ctx.User.Mention} is attacking `{_entity.name}` in `{users[ctx.Member].location.name}`.");
+                                            await ctx.TriggerTypingAsync();
 
-                                        //Alert that an entity is attacking the member who initiated the command at a location
-                                        await ctx.RespondAsync($"`{_entity.name}` is attacking {ctx.Member.Mention} in `{users[ctx.Member].location.name}`.");
-                                        await ctx.TriggerTypingAsync();
+                                            //Reduce the defending party's health value by the offending party's damage value
+                                            enemy.curHP -= player.;
 
-                                        //Reduce the defending party's health value by the offending party's damage value
-                                        users[ctx.Member].health -= _entity.damage;
+                                            if (_entity.health <= 0)
+                                            {
+                                                //Alert that the offending party has slain the defending party.
+                                                await ctx.RespondAsync($"{ctx.User.Mention} has killed `{_entity.name}` at `{users[ctx.Member].location.name}`.");
+                                                _location.entities.Remove(_entity);
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                //Alert that the offending party has struck the defending party.
+                                                await ctx.RespondAsync($"{ctx.User.Mention} has attacked `{_entity.name}` for `{users[ctx.Member].damage}` damage at `{users[ctx.Member].location.name}`.");
+                                            }
 
-                                        //if statement to check for death or just health reduction
-                                        if (users[ctx.Member].health <= 0)
-                                        {
-                                            //Alert that the offending party has slain the defending party.
-                                            await ctx.RespondAsync($"`{_entity.name}` has killed {ctx.Member.Mention} at `{users[ctx.Member].location.name}`.");
-                                        }
-                                        else
-                                        {
-                                            //Alert that the offending party has struck the defending party.
-                                            await ctx.RespondAsync($"`{_entity.name}` has attacked {ctx.Member.Mention} for `{_entity.damage}` damage at `{users[ctx.Member].location.name}`.");
+                                            //**ENTITY OFFENDER, PLAYER DEFENDER**
+
+                                            //Alert that an entity is attacking the member who initiated the command at a location
+                                            await ctx.RespondAsync($"`{_entity.name}` is attacking {ctx.Member.Mention} in `{users[ctx.Member].location.name}`.");
+                                            await ctx.TriggerTypingAsync();
+
+                                            //Reduce the defending party's health value by the offending party's damage value
+                                            users[ctx.Member].health -= _entity.damage;
+
+                                            //if statement to check for death or just health reduction
+                                            if (users[ctx.Member].health <= 0)
+                                            {
+                                                //Alert that the offending party has slain the defending party.
+                                                await ctx.RespondAsync($"`{_entity.name}` has killed {ctx.Member.Mention} at `{users[ctx.Member].location.name}`.");
+                                            }
+                                            else
+                                            {
+                                                //Alert that the offending party has struck the defending party.
+                                                await ctx.RespondAsync($"`{_entity.name}` has attacked {ctx.Member.Mention} for `{_entity.damage}` damage at `{users[ctx.Member].location.name}`.");
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        await ctx.RespondAsync($"There are no entities to attack in `{users[ctx.Member].location.name}`.");
+                    }
+                    await ctx.Message.DeleteAsync();
                 }
-                else
-                {
-                    await ctx.RespondAsync($"There are no entities to attack in `{users[ctx.Member].location.name}`.");
-                }
-                await ctx.Message.DeleteAsync();
             }
             catch
             {
