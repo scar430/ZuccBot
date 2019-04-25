@@ -20,7 +20,7 @@ using System.Data.SQLite;
 using Newtonsoft.Json.Converters;
 
 //**NOTE** .NET Core 2.0 is the recommended target framework. (I don't know how your opening this project)
-//**NOTE** There may or may not be a 'README.txt', please check, if 'README.txt' isn't in the main folder (folder that contains ZuccBot.sln) then ignore this.
+//**NOTE** As a general rule of thumb, if your wondering why something was done a certain (e.g. Everything dealing with discord's emoji class.), it's usually due to some problem working with the dsharpplus API.
 
 namespace ZuccBot
 {
@@ -66,16 +66,32 @@ namespace ZuccBot
             discord.GuildMemberAdded += Discord_MemberAdded;
             discord.GuildMemberRemoved += Discord_MemberRemoved;
             discord.GuildCreated += Discord_GuildCreated;
+            discord.GuildDeleted += Discord_GuildDeleted;
+            discord.GuildUpdated += Discord_GuildUpdated;
 
             //Valid Commands.
             commands.RegisterCommands<Commands>();//General commands (banning, kicking, etc.)
             commands.RegisterCommands<GenericRPG>();//RPG commands (Create characters, attack entities, etc.)
 
+            await Checkup();
+
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
             await Task.Delay(-1);//Wait infinitely. Bot purgatory.
         }
 
-        private static Task Discord_GuildCreated(GuildCreateEventArgs e)
+        private static async Task Discord_GuildUpdated(GuildUpdateEventArgs e)
+        {
+            await Checkup();
+            await Task.CompletedTask;
+        }
+
+        private static async Task Discord_GuildDeleted(GuildDeleteEventArgs e)
+        {
+            await Checkup();
+            await Task.CompletedTask;
+        }
+
+        private static async Task Discord_GuildCreated(GuildCreateEventArgs e)
         {
             var embed = new DiscordEmbedBuilder() { Title = "**Hi! It's me ZuccBot! Beep Boop.**", Description = "Please read the list below for useful information.", Color = DiscordColor.CornflowerBlue, ImageUrl = Directory.GetCurrentDirectory() + "\\Assets\\Zuckerberg.jpg" };
 
@@ -85,9 +101,11 @@ namespace ZuccBot
 
             DiscordEmbed greeter = embed;
 
-            e.Guild.GetDefaultChannel().SendMessageAsync("", false, greeter);
+            await e.Guild.GetDefaultChannel().SendMessageAsync("", false, greeter);
 
-            return Task.CompletedTask;
+            await Checkup();
+
+            await Task.CompletedTask;
         }
 
         //Logs of players being removed and added are attributed to the default channel
@@ -630,6 +648,27 @@ namespace ZuccBot
                     await Task.Delay(1000);
                 }
             }
+        }
+        
+        //Checking that the necessary directories exist
+        private static async Task Checkup()
+        {
+            foreach (DiscordGuild guild in discord.Guilds.Values)
+            {
+                //check if the RPG directy for this guild exists, if it doesn't then create it.
+                if (Directory.Exists(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Name) == false)
+                {
+                    Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Name);
+                }
+
+                //Check if the Chat-Log directory for this guild exists, if it doesn't then create it.
+                if (Directory.Exists(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + guild.Name) == false)
+                {
+                    Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + guild.Name);
+                }
+            }
+
+            await Task.CompletedTask;
         }
     }
 }
