@@ -65,6 +65,7 @@ namespace ZuccBot
             discord.MessageDeleted += Discord_MessageDeleted;
             discord.GuildMemberAdded += Discord_MemberAdded;
             discord.GuildMemberRemoved += Discord_MemberRemoved;
+            discord.GuildCreated += Discord_GuildCreated;
 
             //Valid Commands.
             commands.RegisterCommands<Commands>();//General commands (banning, kicking, etc.)
@@ -72,6 +73,21 @@ namespace ZuccBot
 
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
             await Task.Delay(-1);//Wait infinitely. Bot purgatory.
+        }
+
+        private static Task Discord_GuildCreated(GuildCreateEventArgs e)
+        {
+            var embed = new DiscordEmbedBuilder() { Title = "**Hi! It's me ZuccBot! Beep Boop.**", Description = "Please read the list below for useful information.", Color = DiscordColor.CornflowerBlue, ImageUrl = Directory.GetCurrentDirectory() + "\\Assets\\Zuckerberg.jpg" };
+
+            embed.AddField("*Command Usage*","ZuccBot's command prefix is `>` and help can be found using the `help` command. If you do not know what a command prefix is, it is the character before every command. E.g. In order to type the `help` command, one would type `>help` into chat.");
+
+            embed.AddField("*Features*","ZuccBot comes with utility commands and features an RPG. Use the `uHelp` command or the `rpgHelp` command to find information on both of these.");
+
+            DiscordEmbed greeter = embed;
+
+            e.Guild.GetDefaultChannel().SendMessageAsync("", false, greeter);
+
+            return Task.CompletedTask;
         }
 
         //Logs of players being removed and added are attributed to the default channel

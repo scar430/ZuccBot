@@ -82,3 +82,6 @@ Date : 4/22/2019 7:14:47 PM | Guild : Tinkery | Channel : test-channel | User : 
 Date : 4/22/2019 7:15:00 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Deleted Message : ">rpg>new"
 Date : 4/22/2019 7:34:50 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">rpg>new"
 Date : 4/22/2019 7:35:01 PM | Guild : Tinkery | Channel : test-channel | User : scar430 | Deleted Message : ">rpg>new"
+Date : 4/25/2019 2:01:20 AM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">uHelp"
+Date : 4/25/2019 2:01:34 AM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">uHelp"
+Date : 4/25/2019 2:02:10 AM | Guild : Tinkery | Channel : test-channel | User : scar430 | Message : ">uHelp"

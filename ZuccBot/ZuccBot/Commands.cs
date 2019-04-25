@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -8,13 +9,66 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
+using ZuccBot.ZuccRPG;
 
 namespace ZuccBot
 {
     public class Commands
     {
-        
         //Some of the commands end with deleting the message so that way you don't have constant commmand spam
+
+        /*[Command("help")]
+        public async Task help(CommandContext ctx)
+        {
+            var embed = new DiscordEmbedBuilder() { Title = "**Help**", Description = "General help command that contains pointers to more specific help commands.", Color = DiscordColor.CornflowerBlue};
+
+            embed.AddField("uHelp", "`uHelp` or ''Utility Help'' is used for help with all Utility commands (banning, kicking, adding/removing roles, etc.).");
+            embed.AddField("rpgHelp", "`rpgHelp` or ''Role-Playig-Game Help'' is used for help with ZuccBot's RPG.");
+
+            DiscordEmbed help = embed;
+
+            await ctx.Message.DeleteAsync();
+            await ctx.RespondAsync("", false, help);
+        }*/
+
+        [Command("uHelp")]
+        public async Task uHelp(CommandContext ctx)
+        {
+            var embed = new DiscordEmbedBuilder() { Title = "Utility Help", Description = "Help with utility commands.", Color = DiscordColor.CornflowerBlue};
+
+            foreach (MemberInfo member in typeof(Commands).GetMembers())
+            {
+
+                Attribute[] attributes = Attribute.GetCustomAttributes(member);
+
+                foreach (System.Attribute attribute in attributes)
+                {
+                    if (attribute is CommandAttribute)
+                    {
+                        CommandAttribute command = (CommandAttribute)attribute;
+
+                        foreach (System.Attribute _attribute in attributes)
+                        {
+                            if (attribute is DescriptionAttribute)
+                            {
+                                DescriptionAttribute description = (DescriptionAttribute)attribute;
+                                embed.AddField(command.Name.ToString(), description.Description.ToString());
+                            }
+                            else
+                            {
+                                embed.AddField(command.Name.ToString(), "No description available.");
+                            }
+                        }
+                    }
+                }
+            }
+
+            DiscordEmbed utilityEmbed = embed;
+
+            await ctx.RespondAsync("", false, utilityEmbed);
+
+            await Task.CompletedTask;
+        }
 
         //This command only works for the owner's account (scar430) so if your trying to run this and it's not working then that's why.
         //Shut Down command
