@@ -580,42 +580,36 @@ namespace ZuccBot
                                 character.dexterity += 1;
                             }
 
-                            if (File.Exists(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                            if (!File.Exists(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\Players.txt"))
                             {
-                                using (StreamReader readCharacters = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name);
+                                using (StreamWriter createCharacters = File.CreateText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\Players.txt"))
                                 {
-                                    Dictionary<DiscordUser, CombatEntity> characters = (Dictionary<DiscordUser, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<DiscordUser, CombatEntity>));
-                                    using (StreamWriter appendCharacter = File.AppendText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
+                                    Dictionary<string, CombatEntity> characters = new Dictionary<string, CombatEntity>();
+
+                                    characters.Add(e.User.Username, character);
+
+                                    serializer.Serialize(createCharacters, characters);
+                                }
+                            }
+                            else
+                            {
+                                using (StreamReader readCharacters = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\Players.txt"))
+                                {
+                                    Dictionary<string, CombatEntity> characters = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
+                                    using (StreamWriter appendCharacter = File.CreateText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\Players.txt"))
                                     {
                                         JsonSerializer _serializer = new JsonSerializer();
                                         serializer.Converters.Add(new JavaScriptDateTimeConverter());
                                         serializer.NullValueHandling = NullValueHandling.Ignore;
 
-                                        characters.Add(e.User, character);
+                                        characters.Add(e.User.Username, character);
 
                                         serializer.Serialize(appendCharacter, characters);
                                     }
                                 }
                             }
-                            else
-                            {
-                                using (StreamWriter createCharacters = File.CreateText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
-                                {
-                                    using (StreamReader readCharacters = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
-                                    {
-                                        using (StreamWriter appendCharacter = File.AppendText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\PlayersConfig.txt"))
-                                        {
-                                            Dictionary<DiscordUser, CombatEntity> characters = new Dictionary<DiscordUser, CombatEntity>();
 
-                                            characters.Add(e.User, character);
-
-                                            serializer.Serialize(appendCharacter, characters);
-                                        }
-                                    }
-                                } 
-                            }
-
-                            //We're done with this message, delete it to clear clutter
                             await e.Message.DeleteAsync();
 
                             //The task was completed successfully and no longer needs to be active
@@ -633,7 +627,6 @@ namespace ZuccBot
                 }
                 else
                 {
-                    Console.WriteLine(e.Message.Embeds.Count.ToString());
                     await Task.Delay(1000);
                 }
             }

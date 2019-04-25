@@ -232,7 +232,7 @@ namespace ZuccBot.ZuccRPG
                 entities.Add(troll);
 
                 serializer.Serialize(writer, entities);
-            }*/
+            }
 
             using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
             {
@@ -250,7 +250,7 @@ namespace ZuccBot.ZuccRPG
                     //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
                     locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
                 }
-            }
+            }*/
 
             //Read "CharacterConfig.txt"
             using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
@@ -281,19 +281,40 @@ namespace ZuccBot.ZuccRPG
         [Command(commandPrefix + "players")]
         public async Task Players(CommandContext ctx)
         {
-            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\PlayersConfig.txt"))
+            if (File.Exists(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + ctx.Channel.Guild.Name + "\\Players.txt"))
             {
-                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
-
-                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current 
-
-                Dictionary<DiscordUser, CombatEntity> characters = (Dictionary<DiscordUser, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<DiscordUser, CombatEntity>));
-                //For every member who has created an avatar...
-                foreach (DiscordUser user in characters.Keys)
+                using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + ctx.Channel.Guild.Name + "\\Players.txt"))
                 {
-                    //List the name of the current iterated player
-                    await ctx.RespondAsync($"{user.Username}\n");
+                    ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
+
+                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current 
+
+                    Dictionary<string, CombatEntity> players = (Dictionary<string, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<string, CombatEntity>));
+
+                    //Create the discordembed that relays who is in the rpg
+                    DiscordEmbedBuilder msg = new DiscordEmbedBuilder() { Title = "**RPG Players**", Description = "A list of all known players in the RPG.", Color = DiscordColor.CornflowerBlue };
+                    if (players.Keys.Count == 0)
+                    {
+                        msg.AddField("No players could be found.", "", false);
+                    }
+                    else
+                    {
+                        //For every member who has created an avatar...
+                        foreach (string user in players.Keys)
+                        {
+                            //List the name of the current iterated player
+                            msg.AddField($"*{user}*\n","Known RPG player.", false);
+                        }
+                    }
+
+                    DiscordEmbed embed = msg;
+
+                    await ctx.RespondAsync("", false, embed);
                 }
+            }
+            else
+            {
+                await ctx.RespondAsync("The file containing the list of players could not be found.");
             }
             await ctx.Message.DeleteAsync();
         }
@@ -372,15 +393,15 @@ namespace ZuccBot.ZuccRPG
                 }
                 foreach (Location location in locations)
                 {
-                    using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\PlayersConfig.txt"))
+                    using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + ctx.Channel.Guild.Name + "\\Players.txt"))
                     {
                         ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
 
                         JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current 
 
-                        Dictionary<DiscordUser, CombatEntity> characters = (Dictionary<DiscordUser, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<DiscordUser, CombatEntity>));
+                        Dictionary<string, CombatEntity> characters = (Dictionary<string, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<string, CombatEntity>));
 
-                        if (location.entities.ContainsValue(characters[ctx.User]))
+                        if (location.entities.ContainsValue(characters[ctx.User.Username]))
                         {
                             //Being the list by stating what location this information pertains to and list it's name.
                             await ctx.RespondAsync($"Information on `{location.name}`: \n**Name** : \n`{location.name}`\n");
@@ -404,7 +425,7 @@ namespace ZuccBot.ZuccRPG
                         {
                             foreach (Location subLocation in location.levels)
                             {
-                                if (subLocation.entities.ContainsValue(characters[ctx.User]))
+                                if (subLocation.entities.ContainsValue(characters[ctx.User.Username]))
                                 {
                                     //Being the list by stating what location this information pertains to and list it's name.
                                     await ctx.RespondAsync($"Information on `{subLocation.name}`, located in `{location.name}`: \n**Name** : \n`{subLocation.name}`\n");
