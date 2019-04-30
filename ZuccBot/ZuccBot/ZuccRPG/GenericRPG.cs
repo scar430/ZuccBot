@@ -12,7 +12,7 @@ using DSharpPlus.Net;
 using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using ZuccBot;
+using ZuccBot.ZuccRPG;
 using System.Runtime.Serialization.Json;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
@@ -27,12 +27,7 @@ namespace ZuccBot.ZuccRPG
     {
         const string commandPrefix = "rpg>";//All commands relating to the GenericRPG game are prefixed with rpg, this helps stop command clutter
 
-        //These two lists may be temporary
-        public List<Location> locations;//All the locations in this world.
-
-        //**Create Character**
-        //Command : rpgCreateCharacter
-        //This function is subject to a lot of change.
+        //Create a character
         [Command(commandPrefix + "new")]
         public async Task CreateCharacter(CommandContext ctx)
         {
@@ -253,7 +248,7 @@ namespace ZuccBot.ZuccRPG
             }*/
 
             //Read "CharacterConfig.txt"
-            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
+            using (StreamReader file = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\CharacterConfig.txt"))
             {
                 //More of a debug feature, jsut checks what your doing and can log what your accessing
                 ITraceWriter tcr = new MemoryTraceWriter();
@@ -266,7 +261,11 @@ namespace ZuccBot.ZuccRPG
 
                 //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
                 List<DiscordEmbed> embed = (List<DiscordEmbed>)serializer.Deserialize(file, typeof(List<DiscordEmbed>));
+                //var msg = await ctx.Channel.SendMessageAsync($"", false, embed[0]);
+
+                //var dm = await ctx.Member.CreateDmChannelAsync();
                 var msg = await ctx.Channel.SendMessageAsync($"", false, embed[0]);
+
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":leaves:"));
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":pick:"));
@@ -275,19 +274,129 @@ namespace ZuccBot.ZuccRPG
             await Task.CompletedTask;
         }
 
-        //**LIST PLAYERS**
-        //Command : rpgPlayers
-        //Lists all of the players who are partaking in the rpg (list of players is limited to server.)
+        //List of all items in the players inventory
+        [Command(commandPrefix + "items")]
+        public async Task Items(CommandContext ctx)
+        {
+            using (StreamReader file = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Channel.Guild.Id}\\Players.txt"))
+            {
+                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
+
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                Dictionary<string, CombatEntity> players = (Dictionary<string, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<string, CombatEntity>));
+
+                var embed = new DiscordEmbedBuilder() { Title = "**Inventory**", Description = "All items currently held by the player.", Color = DiscordColor.CornflowerBlue };
+
+                foreach (Item item in players[ctx.User.Username].items)
+                {
+                    embed.AddField(item.name, "No description available.", false);
+                }
+
+                DiscordEmbed items = embed;
+
+                await ctx.RespondAsync("", false, items);
+            }
+
+            await Task.CompletedTask;
+        }
+
+        //Equip armor
+        [Command(commandPrefix + "equip")]
+        public async Task Equip(CommandContext ctx, string itemToEquip)
+        {
+            var embed = new DiscordEmbedBuilder() { Title = "**Equipment**", Color = DiscordColor.CornflowerBlue };
+            using (StreamReader file = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Channel.Guild.Id}\\Players.txt"))
+            {
+                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
+
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                Dictionary<string, CombatEntity> players = (Dictionary<string, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<string, CombatEntity>));
+
+                //Keep this in memory so we aren't constantly looking for it.
+                var vessel = players[ctx.User.Username];
+
+                if (vessel.items.Exists(x => x.name == itemToEquip))
+                {
+                    var item = vessel.items.Find(x => x.name == itemToEquip);
+                    if (item is Armor)
+                    {
+                        //Remember this as Armor
+                        var _item = item as Armor;
+                        switch (_item.armor)
+                        {
+                            case ArmorType.head:
+                                vessel.headSlot = _item;
+                                break;
+                            case ArmorType.torso:
+                                vessel.torsoSlot = _item;
+                                break;
+                            case ArmorType.leg:
+                                vessel.legSlot = _item;
+                                break;
+                            case ArmorType.foot:
+                                vessel.footSlot = _item;
+                                break;
+                        }
+                        embed.Description = $"You have successfully equipped {item.name}.";
+                    }
+                    else
+                    {
+                        embed.Description = $"You have failed to equip {item.name}, this item is not a known piece of equipment.";
+                    }
+
+                    if (vessel.headSlot != null)
+                    {
+                        embed.AddField($"*{vessel.headSlot.name}*", $"Head Slot", false);
+                    }
+                    else
+                    {
+                        embed.AddField($"*Empty*", $"Head Slot", false);
+                    }
+
+                    if (vessel.torsoSlot != null)
+                    {
+                        embed.AddField($"*{vessel.torsoSlot}*", $"Torso Slot", false);
+                    }
+                    else
+                    {
+                        embed.AddField($"*Empty*", $"Head Slot", false);
+                    }
+
+                    if (vessel.legSlot != null)
+                    {
+                        embed.AddField($"*{vessel.legSlot}*", $"Leg Slot", false);
+                    }
+                    else
+                    {
+                        embed.AddField($"*Empty*", $"Head Slot", false);
+                    }
+
+                    if (vessel.footSlot != null)
+                    {
+                        embed.AddField($"*{vessel.footSlot}*", $"Foot Slot", false);
+                    }
+                    else
+                    {
+                        embed.AddField($"*Empty*", $"Head Slot", false);
+                    }
+                }
+            }
+            await Task.CompletedTask;
+        }
+
+        //All players in a guild that are partaking in the RPG
         [Command(commandPrefix + "players")]
         public async Task Players(CommandContext ctx)
         {
-            if (File.Exists(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + ctx.Channel.Guild.Name + "\\Players.txt"))
+            if (File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Channel.Guild.Id}\\Players.txt"))
             {
-                using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + ctx.Channel.Guild.Name + "\\Players.txt"))
+                using (StreamReader file = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Channel.Guild.Id}\\Players.txt"))
                 {
                     ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
 
-                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current 
+                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
 
                     Dictionary<string, CombatEntity> players = (Dictionary<string, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<string, CombatEntity>));
 
@@ -295,7 +404,7 @@ namespace ZuccBot.ZuccRPG
                     DiscordEmbedBuilder msg = new DiscordEmbedBuilder() { Title = "**RPG Players**", Description = "A list of all known players in the RPG.", Color = DiscordColor.CornflowerBlue };
                     if (players.Keys.Count == 0)
                     {
-                        msg.AddField("No players could be found.", "", false);
+                        msg.AddField("*No players could be found.*", "Nobody in this guild has started ZuccBot's RPG", false);
                     }
                     else
                     {
@@ -319,280 +428,247 @@ namespace ZuccBot.ZuccRPG
             await ctx.Message.DeleteAsync();
         }
 
-        //**TRAVEL**
-        //Command : rpgGoTo specifiedLocation
+        //travel to a location
         [Command(commandPrefix + "go")]
-        public async Task GoTo(CommandContext ctx, string location)
+        public async Task GoTo(CommandContext ctx, string desiredLoc)
         {
             //Try moving the players character, if there is an exception catch it.
             try
             {
-                using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
+                using (StreamReader playerReader = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Guild.Id}\\Players.txt"))
+                using (StreamReader locationReader = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Guild.Id}\\Locations.txt"))
                 {
-                    if (locations == null)
+                    ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, ignore it.
+
+                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//Create a serializer.
+
+                    //Deserialize dictionary of players.
+                    Dictionary<string, CombatEntity> players = (Dictionary<string, CombatEntity>)serializer.Deserialize(playerReader, typeof(Dictionary<string, CombatEntity>));
+
+                    //Deserialize list of locations.
+                    List<Location> locations = (List<Location>)serializer.Deserialize(locationReader, typeof(List<Location>));
+
+                    //I don't want to constantly be looking for this, save it to memory.
+                    var vessel = players[ctx.User.Username];
+
+                    //Look through every location since we need to find where the player is.
+                    foreach (Location curLoc in locations)
                     {
-                        //More of a debug feature, jsut checks what your doing and can log what your accessing
-                        ITraceWriter tcr = new MemoryTraceWriter();
-
-                        //Is gonna use JSON magic on whatever we are targeting with the current file stream
-                        JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
-
-                        //print the memory tracer
-                        Console.WriteLine(tcr);
-
-                        //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
-                        locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
-                    }
-                }
-                //Look through every location...
-                foreach (Location _location in locations)
-                {
-                    //If the current iterated location is equal to the specified one...
-                    if (location == _location.name)
-                    {
-                        //Changed the users location to the specified one.
-                        //users[ctx.Member].location = _location;
-                        
-                        //Inform the user that their avatar was moved to another location
-                        await ctx.RespondAsync($"{ctx.User.Mention}'s avatar was moved to `{_location.name}`");
-                        
-                        //break since the loop no longer needs to continue
-                        break;
-                    }
-                }
-            }
-            catch
-            {
-                //If an exception was thrown it asks if the player created a character
-                await ctx.RespondAsync($"A serious problem has occurred. {ctx.User.Mention} may __NOT__ have created a character or the location specified was null.");
-            }
-            await ctx.Message.DeleteAsync();
-        }
-
-        [Command(commandPrefix + "here")]
-        public async Task LocationInformation(CommandContext ctx)
-        {
-            try
-            {
-                using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
-                {
-                    if (locations == null)
-                    {
-                        //More of a debug feature, jsut checks what your doing and can log what your accessing
-                        ITraceWriter tcr = new MemoryTraceWriter();
-
-                        //Is gonna use JSON magic on whatever we are targeting with the current file stream
-                        JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
-
-                        //print the memory tracer
-                        Console.WriteLine(tcr);
-
-                        //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
-                        locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
-                    }
-                }
-                foreach (Location location in locations)
-                {
-                    using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + ctx.Channel.Guild.Name + "\\Players.txt"))
-                    {
-                        ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
-
-                        JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//We're gonna use this bad boy to read files from the current 
-
-                        Dictionary<string, CombatEntity> characters = (Dictionary<string, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<string, CombatEntity>));
-
-                        if (location.entities.ContainsValue(characters[ctx.User.Username]))
+                        //Check if the current location has the player in it.
+                        if (curLoc.entities.Exists(x => x == vessel))
                         {
-                            //Being the list by stating what location this information pertains to and list it's name.
-                            await ctx.RespondAsync($"Information on `{location.name}`: \n**Name** : \n`{location.name}`\n");
-
-                            //If there are entities in the location...
-                            if (location.entities != null && location.entities.Count > 0)
+                            //If we found the player then we need to check if the location they want to go to even exists.
+                            foreach (Location newLocation in locations)
                             {
-                                //Begin the list of entities by stating it is entities
-                                await ctx.RespondAsync($"**Entities** : \n");
-
-                                //For every entity at the location...
-                                foreach (Entity _entity in location.entities.Values)
+                                //If the location exists then remove them from the old location and place them in the new location.
+                                if (locations.Exists(x => x.name == desiredLoc))
                                 {
-                                    //Print out the entity's name
-                                    await ctx.RespondAsync($"`{_entity.name}`\n");
-                                }
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            foreach (Location subLocation in location.levels)
-                            {
-                                if (subLocation.entities.ContainsValue(characters[ctx.User.Username]))
-                                {
-                                    //Being the list by stating what location this information pertains to and list it's name.
-                                    await ctx.RespondAsync($"Information on `{subLocation.name}`, located in `{location.name}`: \n**Name** : \n`{subLocation.name}`\n");
-
-                                    //If there are entities in the location...
-                                    if (subLocation.entities != null && subLocation.entities.Count > 0)
-                                    {
-                                        //Begin the list of entities by stating it is entities
-                                        await ctx.RespondAsync($"**Entities** : \n");
-
-                                        //For every entity at the location...
-                                        foreach (Entity _entity in subLocation.entities.Values)
-                                        {
-                                            //Print out the entity's name
-                                            await ctx.RespondAsync($"`{_entity.name}`\n");
-                                        }
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        continue;
-                                    }
+                                    curLoc.entities.Remove(vessel);
+                                    newLocation.entities.Add(vessel);
                                 }
                                 else
                                 {
                                     continue;
                                 }
+                                break;
                             }
+                            break;
+                        }
+                        else
+                        {
+                            continue;
                         }
                     }
                 }
             }
             catch
             {
-                //If an exception was thrown, the player probably didn't create a character
-                await ctx.RespondAsync($"A serious problem has occurred. The user has probably __NOT__ created a character yet.");
-            }
-        }
+                var embed = new DiscordEmbedBuilder() { Title = "**ERROR**", Description = "An error has occurred, either the player has not created a character yet or something is wrong with the Guild's saved data.", Color = DiscordColor.CornflowerBlue};
 
-        //**LIST LOCATIONS**
-        //Command : rpgWhatLocations
-        //This is usually used to find locations to travel to with 'rpgGoTo'
-        [Command(commandPrefix + "locations")]
-        public async Task WhatLocations(CommandContext ctx)
-        {
-            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\LocationConfig.txt"))
-            {
-                if (locations == null)
-                {
-                    //More of a debug feature, jsut checks what your doing and can log what your accessing
-                    ITraceWriter tcr = new MemoryTraceWriter();
-
-                    //Is gonna use JSON magic on whatever we are targeting with the current file stream
-                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
-
-                    //print the memory tracer
-                    Console.WriteLine(tcr);
-
-                    //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
-                    locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
-                }
-            }
-
-            //The Bot announces it is listing something
-            await ctx.RespondAsync($"Here's a list of locations for {ctx.User.Mention} : ");
-            for (int i = 0; i < (locations.Count); i++)
-            {
-                //For every accessible location there is, print it's name
-                await ctx.RespondAsync($"\n`{locations[i].name}`");
+                DiscordEmbed errorMsg = embed;
+                await ctx.RespondAsync("", false, errorMsg);
             }
             await ctx.Message.DeleteAsync();
         }
 
-        //**NOTE TO SELF** REWRITE LOCATIONS AND ENTITIES.
-        //**ATTACK**
-        //Command : rpgAttack
-        //Used to attack specified entities in the players current location
-        /*[Command(commandPrefix + "Attack"), Aliases("attack", "fight", "hit", "Fight", "Hit")]
-        public async Task Attack(CommandContext ctx, string name)
+        //List of all locations
+        [Command(commandPrefix + "locations")]
+        public async Task WhatLocations(CommandContext ctx)
         {
-            //In case of exceptions...
+            using (StreamReader file = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPGConfig\\{ctx.Guild.Id}\\Locations.txt"))
+            {
+                //Tracks what were accessing.
+                ITraceWriter tcr = new MemoryTraceWriter();
+
+                //Create a serializer.
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+
+                //Deserialize locations from Locations.txt
+                List<Location> locations = (List<Location>)serializer.Deserialize(file, typeof(List<Location>));
+
+                string locationString = "";
+
+                foreach (Location location in locations)
+                {
+                    locationString += $"\n{location.name}";
+                }
+
+                var embed = new DiscordEmbedBuilder() { Title = "*Locations*", Description = locationString, Color = DiscordColor.CornflowerBlue };
+
+                DiscordEmbed locationMsg = embed;
+
+                await ctx.RespondAsync("", false, locationMsg);
+
+                await ctx.Message.DeleteAsync();
+            }
+
+            await Task.CompletedTask;
+        }
+
+        //Get information on the players current location
+        [Command(commandPrefix + "here")]
+        public async Task here(CommandContext ctx)
+        {
+            using (StreamReader locationReader = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Guild.Id}\\Locations.txt"))
+            using (StreamReader playerReader = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Guild.Id}\\Players.txt"))
+            {
+                ITraceWriter tcr = new MemoryTraceWriter();//Acts like a tracker
+
+                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//Create a serializer
+
+                //Deserialize a dictionary of players from Players.txt
+                Dictionary<string, CombatEntity> players = (Dictionary<string, CombatEntity>)serializer.Deserialize(playerReader, typeof(Dictionary<string, CombatEntity>));
+
+                //Deserialize a list from Locations.txt
+                List<Location> locations = (List<Location>)serializer.Deserialize(locationReader, typeof(List<Location>));
+
+                //Save the player to memory so we aren't constantly looking for it.
+                var vessel = players[ctx.User.Username];
+
+                //Look through all locations and check their list of entities to see if it contains the player.
+                foreach (Location location in locations)
+                {
+                    //Check if the player is in this location.
+                    if (location.entities.Contains(vessel as Entity))
+                    {
+                        var embed = new DiscordEmbedBuilder() { Title = $"**{location.name} Information**", Description = $"Every important detail about a location.",Color = DiscordColor.CornflowerBlue};
+
+                        embed.AddField("*Location Name*", $"{location.name}");
+
+                        if (location.entities != null && location.entities.Count > 0)
+                        {
+                            string entities = "";
+
+                            foreach (Entity entity in location.entities)
+                            {
+                                entities += $"{entity.name}\n";
+                            }
+
+                            embed.AddField("*Entities*", entities);
+                        }
+
+                        if (location.levels.Count() > 0)
+                        {
+                            string subLocations = "";
+
+                            foreach (Location subLocation in location.levels)
+                            {
+                                subLocations += $"{subLocation.name}\n";
+                            }
+
+                            embed.AddField("*Levels*", subLocations);
+                        }
+
+                        DiscordEmbed infoHere = embed;
+
+                        await ctx.RespondAsync("", false, infoHere);
+                    }
+                }
+
+                await ctx.Message.DeleteAsync();
+                await Task.CompletedTask;
+            }
+        }
+
+        //Used to attack specified entities in the players current location
+        [Command(commandPrefix + "attack"), Description("Attack an enemy in your current location, e.g. `>rpg>attack weaponName enemyName`")]
+        public async Task Attack(CommandContext ctx, string weaponName, string enemyName)
+        {
             try
             {
-                using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + ctx.Channel.Guild.Name + "\\Players.txt"))
+                using (StreamReader locationReader = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Guild.Id}\\Locations.txt"))
+                using (StreamReader playerReader = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{ctx.Guild.Id}\\Players.txt"))
                 {
-                    //More of a debug feature, jsut checks what your doing and can log what your accessing
-                    ITraceWriter tcr = new MemoryTraceWriter();
+                    ITraceWriter tcr = new MemoryTraceWriter();//Acts like a tracker
 
-                    //Is gonna use JSON magic on whatever we are targeting with the current file stream
-                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
+                    JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });//Create a serializer
 
-                    Dictionary<string, CombatEntity> users = (Dictionary<string, CombatEntity>)serializer.Deserialize(file, typeof(Dictionary<string, CombatEntity>));
+                    //Deserialize a dictionary of players from Players.txt
+                    Dictionary<string, CombatEntity> players = (Dictionary<string, CombatEntity>)serializer.Deserialize(playerReader, typeof(Dictionary<string, CombatEntity>));
 
-                    if (users[ctx.User.Username].location.entities != null && users[ctx.Member].location.entities.Count > 0)
+                    //Deserialize a list from Locations.txt
+                    List<Location> locations = (List<Location>)serializer.Deserialize(locationReader, typeof(List<Location>));
+
+                    //Save the player to memory so we aren't constantly looking for it.
+                    var vessel = players[ctx.User.Username];
+
+                    //Look through all locations and check their list of entities to see if it contains the player.
+                    foreach (Location location in locations)
                     {
-                        foreach (Location _location in locations)
+                        //Check if the player is in this location.
+                        if (location.entities.Contains(vessel as Entity))
                         {
-                            if (_location.name == users[ctx.Member].location.name)
+                            //Create an embed, this is the beginning of the battle message.
+                            var embed = new DiscordEmbedBuilder() { Title = $"**Battle**", Color = DiscordColor.CornflowerBlue };
+
+                            //Check that the weapon the player specified exists and is a weapon.
+                            if (vessel.items.Exists(x => x.name == weaponName && x is Weapon))
                             {
-                                foreach (Entity _entity in users[ctx.Member].location.entities)
+                                //Save the weapon to memory so we aren't constantly calling it. (Linq operations tend to be heavy)
+                                var weapon = vessel.items.Find(x => x.name == weaponName && x is Weapon) as Weapon;
+
+                                //Check that the enemy specified by the player exists in the same location as the player.
+                                if (location.entities.Exists(x => x.name == enemyName))
                                 {
-                                    if (_entity is CombatEntity)
-                                    {
-                                        if (_entity.name == name)
-                                        {
-                                            CombatEntity enemy = (CombatEntity)_entity;
-                                            CombatEntity player = (CombatEntity)users[ctx.Member];
+                                    //Save the enemy to memory.  (Linq operations tend to be heavy)
+                                    var enemy = location.entities.Find(x => x.name == enemyName);
 
-                                            //**PLAYER OFFENDER, ENTITY DEFENDER**
-                                            //Alert that displays an offending party and defending party.
-                                            await ctx.RespondAsync($"{ctx.User.Mention} is attacking `{_entity.name}` in `{users[ctx.Member].location.name}`.");
-                                            await ctx.TriggerTypingAsync();
-
-                                            //Reduce the defending party's health value by the offending party's damage value
-                                            enemy.curHP -= player.;
-
-                                            if (_entity.health <= 0)
-                                            {
-                                                //Alert that the offending party has slain the defending party.
-                                                await ctx.RespondAsync($"{ctx.User.Mention} has killed `{_entity.name}` at `{users[ctx.Member].location.name}`.");
-                                                _location.entities.Remove(_entity);
-                                                break;
-                                            }
-                                            else
-                                            {
-                                                //Alert that the offending party has struck the defending party.
-                                                await ctx.RespondAsync($"{ctx.User.Mention} has attacked `{_entity.name}` for `{users[ctx.Member].damage}` damage at `{users[ctx.Member].location.name}`.");
-                                            }
-
-                                            //**ENTITY OFFENDER, PLAYER DEFENDER**
-
-                                            //Alert that an entity is attacking the member who initiated the command at a location
-                                            await ctx.RespondAsync($"`{_entity.name}` is attacking {ctx.Member.Mention} in `{users[ctx.Member].location.name}`.");
-                                            await ctx.TriggerTypingAsync();
-
-                                            //Reduce the defending party's health value by the offending party's damage value
-                                            users[ctx.Member].health -= _entity.damage;
-
-                                            //if statement to check for death or just health reduction
-                                            if (users[ctx.Member].health <= 0)
-                                            {
-                                                //Alert that the offending party has slain the defending party.
-                                                await ctx.RespondAsync($"`{_entity.name}` has killed {ctx.Member.Mention} at `{users[ctx.Member].location.name}`.");
-                                            }
-                                            else
-                                            {
-                                                //Alert that the offending party has struck the defending party.
-                                                await ctx.RespondAsync($"`{_entity.name}` has attacked {ctx.Member.Mention} for `{_entity.damage}` damage at `{users[ctx.Member].location.name}`.");
-                                            }
-                                        }
-                                    }
+                                    //Since the weapon and enemy exist a successful attack message is created.
+                                    embed.Description = $"Battle between { vessel.name} and { enemyName}.";
+                                    embed.AddField($"*{vessel.name} has attacked {enemy.name}.*",$"{weapon.Attack(vessel as CombatEntity, enemy as CombatEntity, location, ctx.Guild)}");
+                                }
+                                else
+                                {
+                                    //Since the enemy couldn't be found create a unsuccessful attack message.
+                                    embed.Description = $"{vessel.name} is wildly flailing around in {location.name}.";
                                 }
                             }
+                            else
+                            {
+                                //Since the weapon couldn't be found create a unsuccessful attack message.
+                                embed.Description = $"{vessel.name} is frantically searching their pack for a weapon.";
+                            }
+
+                            DiscordEmbed battleMsg = embed;
+
+                            await ctx.RespondAsync("", false, battleMsg);
+
+                            break;
+                        }
+                        else
+                        {
+                            continue;
                         }
                     }
-                    else
-                    {
-                        await ctx.RespondAsync($"There are no entities to attack in `{users[ctx.Member].location.name}`.");
-                    }
-                    await ctx.Message.DeleteAsync();
                 }
+                await ctx.Message.DeleteAsync();
+                await Task.CompletedTask;
             }
             catch
             {
-                //As of now (March 12 2019), I'm not sure why this would be thrown as I have never had it happen, and there's nothing (I know of) that could cause it. If you do get this exception, Good Luck!
-                await ctx.RespondAsync($"An unknown error has occurred.");
+
+                await Task.CompletedTask;
             }
-        }*/
+        }
     }
 }

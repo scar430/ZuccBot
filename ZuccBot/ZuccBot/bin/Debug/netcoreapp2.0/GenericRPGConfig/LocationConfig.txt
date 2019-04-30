@@ -1,1 +1,0 @@
-[{"entities":{},"items":[],"name":"Tavern","population":0,"levels":[]},{"entities":{},"items":[],"name":"Dungeon","population":2,"levels":[]}]

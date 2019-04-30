@@ -79,6 +79,21 @@ namespace ZuccBot
             await Task.CompletedTask;
         }*/
 
+        [Command("log")]
+        public async Task log(CommandContext ctx)
+        {
+            if (Program.logEnabled == false)
+            {
+                Program.logEnabled = true;
+            }
+            else
+            {
+                Program.logEnabled = false;
+            }
+
+            await Task.CompletedTask;
+        }
+
         //This command only works for the owner's account (scar430) so if your trying to run this and it's not working then that's why.
         //Shut Down command
         [Command("ShutDown"), Aliases("off", "shutdown", "shutoff", "die", "death", "sleep"), RequireOwner, Hidden]

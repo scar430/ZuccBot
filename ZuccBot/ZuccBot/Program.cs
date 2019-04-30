@@ -20,7 +20,7 @@ using System.Data.SQLite;
 using Newtonsoft.Json.Converters;
 
 //**NOTE** .NET Core 2.0 is the recommended target framework. (I don't know how your opening this project)
-//**NOTE** As a general rule of thumb, if your wondering why something was done a certain (e.g. Everything dealing with discord's emoji class.), it's usually due to some problem working with the dsharpplus API.
+//**NOTE** As a general rule of thumb, if your wondering why something was done a certain way or seems inefficient (e.g. Everything and anything that deals with emojis.), it's usually due to some problem working with the dsharpplus API.
 
 namespace ZuccBot
 {
@@ -28,6 +28,8 @@ namespace ZuccBot
     {
         public static DiscordClient discord;
         static CommandsNextModule commands;
+
+        public static bool logEnabled = false;
 
         static void Main(string[] args)
         {
@@ -73,37 +75,33 @@ namespace ZuccBot
             commands.RegisterCommands<Commands>();//General commands (banning, kicking, etc.)
             commands.RegisterCommands<GenericRPG>();//RPG commands (Create characters, attack entities, etc.)
 
-            await Checkup();
-
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
+            //await Checkup();
             await Task.Delay(-1);//Wait infinitely. Bot purgatory.
         }
 
         private static async Task Discord_GuildUpdated(GuildUpdateEventArgs e)
         {
-            await Checkup();
             await Task.CompletedTask;
         }
 
         private static async Task Discord_GuildDeleted(GuildDeleteEventArgs e)
         {
-            await Checkup();
             await Task.CompletedTask;
         }
 
         private static async Task Discord_GuildCreated(GuildCreateEventArgs e)
         {
-            var embed = new DiscordEmbedBuilder() { Title = "**Hi! It's me ZuccBot! Beep Boop.**", Description = "Please read the list below for useful information.", Color = DiscordColor.CornflowerBlue, ImageUrl = Directory.GetCurrentDirectory() + "\\Assets\\Zuckerberg.jpg" };
+            var embed = new DiscordEmbedBuilder() { Title = "**Hi! It's me ZuccBot! Beep Boop.**", Description = "Please read the list below for useful information.", Color = DiscordColor.CornflowerBlue };
 
-            embed.AddField("*Command Usage*","ZuccBot's command prefix is `>` and help can be found using the `help` command. If you do not know what a command prefix is, it is the character before every command. E.g. In order to type the `help` command, one would type `>help` into chat.");
+            embed.AddField("*Command Usage*","ZuccBot's command prefix is `>` and help can be found using the `help` command. If you do not know what a command prefix is, it is the character before every command. E.g. In order to type the `help` command, one would type `>help` into chat.", false);
 
-            embed.AddField("*Features*","ZuccBot comes with utility commands and features an RPG. Use the `uHelp` command or the `rpgHelp` command to find information on both of these.");
+            embed.AddField("*Features*","ZuccBot comes with utility commands and features an RPG. Use the `uHelp` command or the `rpgHelp` command to find information on both of these.", false);
 
-            DiscordEmbed greeter = embed;
+            DiscordEmbed greeter = embed.Build();
 
-            await e.Guild.GetDefaultChannel().SendMessageAsync("", false, greeter);
-
-            await Checkup();
+            var greeterVar = await e.Guild.GetDefaultChannel().SendMessageAsync("", false, greeter);
+            await greeterVar.PinAsync();
 
             await Task.CompletedTask;
         }
@@ -116,49 +114,12 @@ namespace ZuccBot
             {
                 if (!e.Member.IsBot)
                 {
-                    string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Guild.GetDefaultChannel().Name.ToString());
-                    string txtfile = "\\" + e.Guild.GetDefaultChannel().Name.ToString() + ".txt";
+                    string path = $"{Directory.GetCurrentDirectory()}\\ChatLogs\\{e.Guild.Id}\\{e.Guild.GetDefaultChannel().Id}\\";
+                    string txtfile = $"{e.Guild.GetDefaultChannel().Name}.txt";
                     string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Guild.GetDefaultChannel().Name.ToString() + " | " + "**User Removed** : " + e.Member.Username.ToString();
                     string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Member.Username.ToString() + " | " + "User Removed : " + e.Member.Username.ToString();
 
-                    if (File.Exists(path) == false)
-                    {
-                        Directory.CreateDirectory(path);
-
-                        if (Directory.GetFiles(path).Contains(txtfile))
-                        {
-                            using (StreamWriter fs = File.CreateText(path + txtfile))
-                            {
-                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages and using a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                                using (StreamWriter file = File.AppendText(path + txtfile))
-                                {
-                                    using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
-                                    {
-                                        file.WriteLine(log);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                            using (StreamWriter file = File.AppendText(path + txtfile))
-                            {
-                                file.WriteLine(log);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                        using (StreamWriter file = File.AppendText(path))
-                        {
-                            using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
-                            {
-                                file.WriteLine(msg);
-                            }
-                        }
-                    }
+                    WriteLog($"{path}", $"{txtfile}", log);
 
                     //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
                     foreach (DiscordGuild guild in discord.Guilds.Values)
@@ -211,49 +172,12 @@ namespace ZuccBot
             {
                 if (!e.Member.IsBot)
                 {
-                    string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Guild.GetDefaultChannel().Name.ToString());
-                    string txtfile = "\\" + e.Guild.GetDefaultChannel().Name.ToString() + ".txt";
+                    string path = $"{Directory.GetCurrentDirectory()}\\ChatLogs\\{e.Guild.Id}\\{e.Guild.GetDefaultChannel().Id}\\";
+                    string txtfile = $"{e.Guild.GetDefaultChannel().Name}.txt";
                     string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Guild.GetDefaultChannel().Name.ToString() + " | " + "**User Joined** : " + e.Member.Username.ToString();
                     string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Member.Username.ToString() + " | " + "User Joined : " + e.Member.Username.ToString();
 
-                    if (System.IO.File.Exists(path) == false)
-                    {
-                        Directory.CreateDirectory(path);
-
-                        if (Directory.GetFiles(path).Contains(txtfile))
-                        {
-                            using (StreamWriter fs = File.CreateText(path + txtfile))
-                            {
-                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                                using (StreamWriter file = File.AppendText(path + txtfile))
-                                {
-                                    using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
-                                    {
-                                        file.WriteLine(log);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                            using (StreamWriter file = File.AppendText(path + txtfile))
-                            {
-                                file.WriteLine(log);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                        using (StreamWriter file = File.AppendText(path))
-                        {
-                            using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Member.Username.ToString() + "\\" + e.Member.Username.ToString() + ".txt"))
-                            {
-                                file.WriteLine(msg);
-                            }
-                        }
-                    }
+                    WriteLog($"{path}", $"{txtfile}", log);
 
                     //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
                     foreach (DiscordGuild guild in discord.Guilds.Values)
@@ -304,51 +228,14 @@ namespace ZuccBot
         {
             try
             {
-                if (!e.Message.Author.IsBot)
+                if (!e.Message.Author.IsBot && logEnabled == true) 
                 {
-                    string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString());
-                    string txtfile = "\\" + e.Channel.Name.ToString() + ".txt";
+                    string path = $"{Directory.GetCurrentDirectory()}\\ChatLogs\\{e.Guild.Id}\\{e.Channel.Id}\\";
+                    string txtfile = $"{e.Channel.Name}.txt";
                     string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Channel.Name.ToString() + " | " + "**User** : " + e.Message.Author.Username.ToString() + " | " + "**Deleted Message** : " + '"' + e.Message.Content + '"';
                     string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Channel.Name.ToString() + " | " + "User : " + e.Message.Author.Username.ToString() + " | " + "Deleted Message : " + '"' + e.Message.Content + '"';
 
-                    if (System.IO.File.Exists(path) == false)
-                    {
-                        Directory.CreateDirectory(path);
-
-                        if (Directory.GetFiles(path).Contains(txtfile))
-                        {
-                            using (StreamWriter fs = File.CreateText(path + txtfile))
-                            {
-                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                                using (StreamWriter file = File.AppendText(path + txtfile))
-                                {
-                                    using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
-                                    {
-                                        file.WriteLine(log);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                            using (StreamWriter file = File.AppendText(path + txtfile))
-                            {
-                                file.WriteLine(log);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                        using (StreamWriter file = File.AppendText(path))
-                        {
-                            using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
-                            {
-                                file.WriteLine(msg);
-                            }
-                        }
-                    }
+                    WriteLog(path, txtfile, log);
 
                     //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
                     foreach (DiscordGuild guild in discord.Guilds.Values)
@@ -399,59 +286,20 @@ namespace ZuccBot
         {
             try
             {
-                if (!e.Author.IsBot)
+                if (!e.Author.IsBot && logEnabled == true)
                 {
-                    string path = (Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString());
-                    string txtfile = "\\" + e.Channel.Name.ToString() + ".txt";
+                    string path = $"{Directory.GetCurrentDirectory()}\\ChatLogs\\{e.Guild.Id}\\{e.Channel.Id}\\";
+                    string txtfile = $"{e.Channel.Name}.txt";
                     string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Channel.Name.ToString() + " | " + "**User** : " + e.Author.Username.ToString() + " | " + "**Message** : " + '"' + e.Message.Content + '"';
                     string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Channel.Name.ToString() + " | " + "User : " + e.Author.Username.ToString() + " | " + "Message : " + '"' + e.Message.Content + '"';
 
-                    if (System.IO.File.Exists(path) == false)
+                    try
                     {
-                        Directory.CreateDirectory(path);
-
-                        if (Directory.GetFiles(path).Contains(txtfile))
-                        {
-                            using (StreamWriter streamWriter = File.CreateText(path + txtfile))
-                            {
-                                //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                                using (StreamWriter file = File.AppendText(path + txtfile))
-                                {
-                                    using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
-                                    {
-                                        file.WriteLine(log);
-                                    }
-                                }
-                            }
-                            /*
-                            foreach (DiscordAttachment attachment in e.Message.Attachments)
-                            {
-                                attachment.
-                                using (FileStream stream = File.Create(path + attachment.GetType().Name.ToString()))
-                                {
-                                    
-                                }
-                            }*/
-                        }
-                        else
-                        {
-                            //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                            using (StreamWriter file = File.AppendText(path + txtfile))
-                            {
-                                file.WriteLine(log);
-                            }
-                        }
+                        WriteLog($"{path}", $"{txtfile}", log);
                     }
-                    else
+                    catch (IOException test)
                     {
-                        //This could be done with an SQL DB however this was on hand and I doubt you will get enough messages for this to cause problems, however if you are getting mass amounts of messages a JSON (txt in this case, the main point is your writing to physical memory) then the messages will start to be discarded if they're coming in volumes that the HDD can't handle. I don't know if this is the same in the case of a SSD but I'm assuming your using a HDD because SSDs are for filthy casuals.
-                        using (StreamWriter file = File.AppendText(path))
-                        {
-                            using (StreamWriter _file = File.AppendText(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + e.Guild.Name.ToString() + "\\" + e.Channel.Name.ToString() + "\\" + e.Channel.Name.ToString() + ".txt"))
-                            {
-                                file.WriteLine(msg);
-                            }
-                        }
+                        Console.WriteLine(test.StackTrace.ToString());
                     }
 
                     //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
@@ -499,9 +347,6 @@ namespace ZuccBot
             return Task.CompletedTask;
         }
 
-
-
-
         //**NOTE** You can NOT serialize DiscordEmbedBuilders and cast them as DiscordEmbeds upon deserialization, you MUST serialize DiscordEmbeds as DiscordEmbeds, if you need to serialize a DiscordEmbed then construct it FIRST and then serialize, otherwise deserialization will NOT work.
 
         //This is some really janky code, you have been warned.
@@ -510,7 +355,7 @@ namespace ZuccBot
         private static async Task Discord_ReactionAdded(MessageReactionAddEventArgs e)
         {
             //This is gonna read the file thats being called (CharacterConfig.txt)
-            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\CharacterConfig.txt"))
+            using (StreamReader file = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\CharacterConfig.txt"))
             {
                 //Row, row, row your boat, gently down the stream...
 
@@ -527,7 +372,7 @@ namespace ZuccBot
 
                 if (e.Message.Embeds[0].Title == embed[0].Title)
                 {
-                    if (e.Message.Author.IsCurrent == e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot)
+                    if (e.Message.Author.IsCurrent && e.Channel == e.Channel && e.User == e.User && !e.User.IsBot)
                     {
                         //Switch statements couldn't work due to Discord Emojis not being constant, among other things
                         if (e.Emoji == DiscordEmoji.FromName(discord, ":man:") || e.Emoji == DiscordEmoji.FromName(discord, ":leaves:") || e.Emoji == DiscordEmoji.FromName(discord, ":pick:"))
@@ -549,28 +394,29 @@ namespace ZuccBot
                                 character.race = ZuccRPG.RPGassets.Race.Dwarf;
                                 character.strength += 1;
                             }
-                            //We're gonna flip the paginated embed to the next page
-                            var msg = e.Message.ModifyAsync($"", embed[1]);
 
-                            //Change the reactions to the appropiate ones for the next page
+                            //Console.WriteLine(tcr);
+
                             await e.Message.DeleteAllReactionsAsync();
 
+                            var msg = await e.Message.ModifyAsync("", embed[1]);
+
                             //These emojis should correspond with the choices on the next page (page 2 or element 1)
-                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":crossed_swords:"));
-                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":alembic:"));
-                            await e.Message.CreateReactionAsync(DiscordEmoji.FromName(discord, ":dagger:"));
+                            await msg.CreateReactionAsync(DiscordEmoji.FromName(discord, ":crossed_swords:"));
+                            await msg.CreateReactionAsync(DiscordEmoji.FromName(discord, ":alembic:"));
+                            await msg.CreateReactionAsync(DiscordEmoji.FromName(discord, ":dagger:"));
 
                             //The task was completed successfully and needs to be closed
                             await Task.CompletedTask;
                         }
                         else
                         {
-                            await Task.Delay(1000);
+                            await Task.CompletedTask;
                         }
                     }
                     else
                     {
-                        await Task.Delay(1000);
+                        await Task.CompletedTask;
                     }
                 }
                 else
@@ -598,32 +444,131 @@ namespace ZuccBot
                                 character.dexterity += 1;
                             }
 
-                            if (!File.Exists(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\Players.txt"))
+                            if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}"))
                             {
-                                Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name);
-                                using (StreamWriter createCharacters = File.CreateText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\Players.txt"))
-                                {
-                                    Dictionary<string, CombatEntity> characters = new Dictionary<string, CombatEntity>();
+                                Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}");
 
-                                    characters.Add(e.User.Username, character);
-
-                                    serializer.Serialize(createCharacters, characters);
-                                }
-                            }
-                            else
-                            {
-                                using (StreamReader readCharacters = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\Players.txt"))
+                                if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
                                 {
-                                    Dictionary<string, CombatEntity> characters = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
-                                    using (StreamWriter appendCharacter = File.CreateText(Directory.GetCurrentDirectory() + "\\GenericRPGConfig\\" + e.Channel.Guild.Name + "\\Players.txt"))
+                                    File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt");
+
+                                    Dictionary<string, CombatEntity> outPlayers = new Dictionary<string, CombatEntity>();
+
+                                    using (StreamReader readCharacters = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                    {
+                                        outPlayers = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
+                                    }
+
+                                    using (StreamWriter playerWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                    using (JsonWriter writer = new JsonTextWriter(playerWriter))
                                     {
                                         JsonSerializer _serializer = new JsonSerializer();
                                         serializer.Converters.Add(new JavaScriptDateTimeConverter());
                                         serializer.NullValueHandling = NullValueHandling.Ignore;
 
-                                        characters.Add(e.User.Username, character);
+                                        if (outPlayers != null)
+                                        {
+                                            outPlayers.Add(e.User.Username, character);
+                                            _serializer.Serialize(writer, outPlayers);
+                                        }
+                                        else
+                                        {
+                                            Dictionary<string, CombatEntity> players = new Dictionary<string, CombatEntity>();
+                                            players.Add(e.User.Username, character);
+                                            _serializer.Serialize(writer, players);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Dictionary<string, CombatEntity> outPlayers = new Dictionary<string, CombatEntity>();
 
-                                        serializer.Serialize(appendCharacter, characters);
+                                    using (StreamReader readCharacters = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                    {
+                                        outPlayers = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
+                                    }
+
+                                    using (StreamWriter playerWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                    using (JsonWriter writer = new JsonTextWriter(playerWriter))
+                                    {
+                                        JsonSerializer _serializer = new JsonSerializer();
+                                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                                        serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                                        if (outPlayers != null)
+                                        {
+                                            outPlayers.Add(e.User.Username, character);
+                                            _serializer.Serialize(writer, outPlayers);
+                                        }
+                                        else
+                                        {
+                                            Dictionary<string, CombatEntity> players = new Dictionary<string, CombatEntity>();
+                                            players.Add(e.User.Username, character);
+                                            _serializer.Serialize(writer, players);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                {
+                                    File.CreateText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt");
+
+                                    Dictionary<string, CombatEntity> outPlayers = new Dictionary<string, CombatEntity>();
+
+                                    using (StreamReader readCharacters = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                    {
+                                        outPlayers = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
+                                    }
+
+                                    using (StreamWriter playerWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                    using (JsonWriter writer = new JsonTextWriter(playerWriter))
+                                    {
+                                        JsonSerializer _serializer = new JsonSerializer();
+                                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                                        serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                                        if (outPlayers != null)
+                                        {
+                                            outPlayers.Add(e.User.Username, character);
+                                            _serializer.Serialize(writer, outPlayers);
+                                        }
+                                        else
+                                        {
+                                            Dictionary<string, CombatEntity> players = new Dictionary<string, CombatEntity>();
+                                            players.Add(e.User.Username, character);
+                                            _serializer.Serialize(writer, players);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Dictionary<string, CombatEntity> outPlayers = new Dictionary<string, CombatEntity>();
+
+                                    using (StreamReader readCharacters = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                    {
+                                        outPlayers = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
+                                    }
+
+                                    using (StreamWriter playerWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
+                                    using (JsonWriter writer = new JsonTextWriter(playerWriter))
+                                    {
+                                        JsonSerializer _serializer = new JsonSerializer();
+                                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                                        serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                                        if (outPlayers != null)
+                                        {
+                                            outPlayers.Add(e.User.Username, character);
+                                            _serializer.Serialize(writer, outPlayers);
+                                        }
+                                        else
+                                        {
+                                            Dictionary<string, CombatEntity> players = new Dictionary<string, CombatEntity>();
+                                            players.Add(e.User.Username, character);
+                                            _serializer.Serialize(writer, players);
+                                        }
                                     }
                                 }
                             }
@@ -635,40 +580,41 @@ namespace ZuccBot
                         }
                         else
                         {
-                            await Task.Delay(1000);
+                            await Task.CompletedTask;
                         }
                     }
                     else
                     {
-                        await Task.Delay(1000);
+                        await Task.CompletedTask;
                     }
                 }
                 else
                 {
-                    await Task.Delay(1000);
+                    await Task.CompletedTask;
                 }
             }
         }
-        
-        //Checking that the necessary directories exist
-        private static async Task Checkup()
-        {
-            foreach (DiscordGuild guild in discord.Guilds.Values)
-            {
-                //check if the RPG directy for this guild exists, if it doesn't then create it.
-                if (Directory.Exists(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Name) == false)
-                {
-                    Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Name);
-                }
 
-                //Check if the Chat-Log directory for this guild exists, if it doesn't then create it.
-                if (Directory.Exists(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + guild.Name) == false)
-                {
-                    Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\ChatLogs\\" + guild.Name);
-                }
+        private static Task WriteLog(string directory, string file, string log)
+        {
+            //If the directory doesn't exist create it.
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
             }
 
-            await Task.CompletedTask;
+            //If the file doesn't exist create it.
+            if (!File.Exists(directory + file))
+            {
+                File.Create(directory + file);
+            }
+
+            //Append 'log' to the specified file.
+            using (StreamWriter logWriter = File.AppendText(directory + file))
+            {
+                logWriter.WriteLine(log);
+            }
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,1 +1,0 @@
-{"scar430":{"items":null,"race":2,"class":2,"maxHP":1,"curHP":0,"headSlot":null,"torsoSlot":null,"legSlot":null,"footSlot":null,"strength":0,"dexterity":0,"constitution":1,"name":"<@!255081458006360064>"}}
