@@ -17,7 +17,7 @@ namespace ZuccBot
     {
         //Some of the commands end with deleting the message so that way you don't have constant commmand spam
 
-        /*[Command("help")]
+        [Command("help")]
         public async Task help(CommandContext ctx)
         {
             var embed = new DiscordEmbedBuilder() { Title = "**Help**", Description = "General help command that contains pointers to more specific help commands.", Color = DiscordColor.CornflowerBlue};
@@ -29,9 +29,9 @@ namespace ZuccBot
 
             await ctx.Message.DeleteAsync();
             await ctx.RespondAsync("", false, help);
-        }*/
+        }
 
-        /*[Command("uHelp")]
+        [Command("uHelp")]
         public async Task uHelp(CommandContext ctx)
         {
             Console.WriteLine("Started utility help.");
@@ -77,7 +77,7 @@ namespace ZuccBot
             Console.WriteLine("Embed has sent.");
 
             await Task.CompletedTask;
-        }*/
+        }
 
         [Command("log")]
         public async Task log(CommandContext ctx)
@@ -100,8 +100,9 @@ namespace ZuccBot
         public async Task ShutOff(CommandContext ctx)
         {
             await ctx.RespondAsync($"ZuccBot is turning off.");
-            Environment.Exit(420);//huehuehuehue
+            await Program.rpgCheck(false);
             await ctx.Message.DeleteAsync();
+            Environment.Exit(420);//huehuehuehue
         }  
 
         //Basic hi commmand

@@ -121,7 +121,7 @@ namespace ZuccBot.ZuccRPG.RPGassets
                         }
                         else
                         {
-                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Name + "\\Locations.txt"))
+                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Id + "\\Locations.txt"))
                             {
                                 ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
 
@@ -141,7 +141,7 @@ namespace ZuccBot.ZuccRPG.RPGassets
                         }
                         else
                         {
-                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Name + "\\Locations.txt"))
+                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Id + "\\Locations.txt"))
                             {
                                 ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
 
@@ -161,7 +161,8 @@ namespace ZuccBot.ZuccRPG.RPGassets
                         }
                         else
                         {
-                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Name + "\\Locations.txt"))
+                            List<Location> newLocations = new List<Location>();
+                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Id + "\\Locations.txt"))
                             {
                                 ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
 

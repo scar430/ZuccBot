@@ -20,7 +20,7 @@ using System.Data.SQLite;
 using Newtonsoft.Json.Converters;
 
 //**NOTE** .NET Core 2.0 is the recommended target framework. (I don't know how your opening this project)
-//**NOTE** As a general rule of thumb, if your wondering why something was done a certain way or seems inefficient (e.g. Everything and anything that deals with emojis.), it's usually due to some problem working with the dsharpplus API.
+//**NOTE** As a general rule of thumb, if your wondering why something was done a certain way or seems inefficient (e.g. Everything and anything that deals with emojis.), it's usually due to some problem working with the DSharpPlus API.
 
 namespace ZuccBot
 {
@@ -29,12 +29,17 @@ namespace ZuccBot
         public static DiscordClient discord;
         static CommandsNextModule commands;
 
+        //This is read from physical memory on startup and written into physical memory on shutdown
+        public static Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>> players = new Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>>();
+        public static Dictionary<ulong, List<Location>> locations = new Dictionary<ulong, List<Location>>();
+
+        //Log on/off state (off by default)
         public static bool logEnabled = false;
 
         static void Main(string[] args)
         {
             Console.WriteLine("ZuccBot is awake.");
-            Console.WriteLine(Directory.GetCurrentDirectory());
+            Console.WriteLine(Directory.GetCurrentDirectory());//Announce where ZuccBot can be found. Please visit him he's lonely :(
 
             //Rev this bad boy up (▀̿Ĺ̯▀̿ ̿)
             MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -43,7 +48,7 @@ namespace ZuccBot
         //Setup the bot
         static async Task MainAsync(string[] args)
         {
-            //Create a new client instance (this is the bots 'id', I think this also helps seperate the bots client from any other local clients so that way it doesn't need to use another account as a proxy)
+            //Create the bots client
             discord = new DiscordClient(new DiscordConfiguration
             {
                 //Don't look I'm exposed!
@@ -58,7 +63,10 @@ namespace ZuccBot
             commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 //Ask me anything
-                StringPrefix = ">"
+                StringPrefix = ">",
+
+                //Removes the default help command
+                EnableDefaultHelp = false
             });
 
             //A list of events the client is subscribed to.
@@ -76,7 +84,6 @@ namespace ZuccBot
             commands.RegisterCommands<GenericRPG>();//RPG commands (Create characters, attack entities, etc.)
 
             await discord.ConnectAsync();//Is anyone listening, am I all alone?
-            //await Checkup();
             await Task.Delay(-1);//Wait infinitely. Bot purgatory.
         }
 
@@ -293,14 +300,7 @@ namespace ZuccBot
                     string msg = "**Date** : " + DateTime.Now.ToString() + " | " + "**Guild** : " + e.Guild.Name.ToString() + " | " + "**Channel** : " + e.Channel.Name.ToString() + " | " + "**User** : " + e.Author.Username.ToString() + " | " + "**Message** : " + '"' + e.Message.Content + '"';
                     string log = "Date : " + DateTime.Now.ToString() + " | " + "Guild : " + e.Guild.Name.ToString() + " | " + "Channel : " + e.Channel.Name.ToString() + " | " + "User : " + e.Author.Username.ToString() + " | " + "Message : " + '"' + e.Message.Content + '"';
 
-                    try
-                    {
-                        WriteLog($"{path}", $"{txtfile}", log);
-                    }
-                    catch (IOException test)
-                    {
-                        Console.WriteLine(test.StackTrace.ToString());
-                    }
+                    WriteLog($"{path}", $"{txtfile}", log);
 
                     //For every Guild ZuccBot is in, check if they have a channel name "log", if they don't then create one and log chat to that channel.
                     foreach (DiscordGuild guild in discord.Guilds.Values)
@@ -368,7 +368,7 @@ namespace ZuccBot
                 //**NOTE**There were problems with constants and switch statements and emojis, that's why this extremely convulated if statement exists
                 //Check if the message embed is the same as the first listed embed in the txt file. (the embeds are listed on the txt file in the correct order they should be displayed, e.g. the first listed embed is the first embed that is called)
 
-                CombatEntity character = new CombatEntity(ZuccRPG.RPGassets.Race.Dwarf, Class.Knight, 1, 0, 0, 0, e.User.Mention, null);
+                CombatEntity character = new CombatEntity(ZuccRPG.RPGassets.Race.Dwarf, Class.Knight, 1, 0, 0, 0, e.User.Mention, new List<Item>());
 
                 if (e.Message.Embeds[0].Title == embed[0].Title)
                 {
@@ -444,134 +444,12 @@ namespace ZuccBot
                                 character.dexterity += 1;
                             }
 
-                            if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}"))
-                            {
-                                Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}");
+                            await rpgCheck(true);
 
-                                if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                {
-                                    File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt");
-
-                                    Dictionary<string, CombatEntity> outPlayers = new Dictionary<string, CombatEntity>();
-
-                                    using (StreamReader readCharacters = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                    {
-                                        outPlayers = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
-                                    }
-
-                                    using (StreamWriter playerWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                    using (JsonWriter writer = new JsonTextWriter(playerWriter))
-                                    {
-                                        JsonSerializer _serializer = new JsonSerializer();
-                                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
-                                        serializer.NullValueHandling = NullValueHandling.Ignore;
-
-                                        if (outPlayers != null)
-                                        {
-                                            outPlayers.Add(e.User.Username, character);
-                                            _serializer.Serialize(writer, outPlayers);
-                                        }
-                                        else
-                                        {
-                                            Dictionary<string, CombatEntity> players = new Dictionary<string, CombatEntity>();
-                                            players.Add(e.User.Username, character);
-                                            _serializer.Serialize(writer, players);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    Dictionary<string, CombatEntity> outPlayers = new Dictionary<string, CombatEntity>();
-
-                                    using (StreamReader readCharacters = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                    {
-                                        outPlayers = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
-                                    }
-
-                                    using (StreamWriter playerWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                    using (JsonWriter writer = new JsonTextWriter(playerWriter))
-                                    {
-                                        JsonSerializer _serializer = new JsonSerializer();
-                                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
-                                        serializer.NullValueHandling = NullValueHandling.Ignore;
-
-                                        if (outPlayers != null)
-                                        {
-                                            outPlayers.Add(e.User.Username, character);
-                                            _serializer.Serialize(writer, outPlayers);
-                                        }
-                                        else
-                                        {
-                                            Dictionary<string, CombatEntity> players = new Dictionary<string, CombatEntity>();
-                                            players.Add(e.User.Username, character);
-                                            _serializer.Serialize(writer, players);
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                {
-                                    File.CreateText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt");
-
-                                    Dictionary<string, CombatEntity> outPlayers = new Dictionary<string, CombatEntity>();
-
-                                    using (StreamReader readCharacters = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                    {
-                                        outPlayers = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
-                                    }
-
-                                    using (StreamWriter playerWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                    using (JsonWriter writer = new JsonTextWriter(playerWriter))
-                                    {
-                                        JsonSerializer _serializer = new JsonSerializer();
-                                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
-                                        serializer.NullValueHandling = NullValueHandling.Ignore;
-
-                                        if (outPlayers != null)
-                                        {
-                                            outPlayers.Add(e.User.Username, character);
-                                            _serializer.Serialize(writer, outPlayers);
-                                        }
-                                        else
-                                        {
-                                            Dictionary<string, CombatEntity> players = new Dictionary<string, CombatEntity>();
-                                            players.Add(e.User.Username, character);
-                                            _serializer.Serialize(writer, players);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    Dictionary<string, CombatEntity> outPlayers = new Dictionary<string, CombatEntity>();
-
-                                    using (StreamReader readCharacters = File.OpenText($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                    {
-                                        outPlayers = (Dictionary<string, CombatEntity>)serializer.Deserialize(readCharacters, typeof(Dictionary<string, CombatEntity>));
-                                    }
-
-                                    using (StreamWriter playerWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{e.Channel.Guild.Id}\\Players.txt"))
-                                    using (JsonWriter writer = new JsonTextWriter(playerWriter))
-                                    {
-                                        JsonSerializer _serializer = new JsonSerializer();
-                                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
-                                        serializer.NullValueHandling = NullValueHandling.Ignore;
-
-                                        if (outPlayers != null)
-                                        {
-                                            outPlayers.Add(e.User.Username, character);
-                                            _serializer.Serialize(writer, outPlayers);
-                                        }
-                                        else
-                                        {
-                                            Dictionary<string, CombatEntity> players = new Dictionary<string, CombatEntity>();
-                                            players.Add(e.User.Username, character);
-                                            _serializer.Serialize(writer, players);
-                                        }
-                                    }
-                                }
-                            }
+                            Console.WriteLine("hi1 ");
+                            players[e.Channel.GuildId].Add(e.User, character);
+                            Console.WriteLine("hi2 ");
+                            locations[e.Channel.GuildId][0].entities.Add(players[e.Channel.GuildId][e.User]);
 
                             await e.Message.DeleteAsync();
 
@@ -615,6 +493,130 @@ namespace ZuccBot
                 logWriter.WriteLine(log);
             }
             return Task.CompletedTask;
+        }
+
+        public static async Task rpgCheck(bool read = true)
+        {
+            if (read == true)
+            {
+                foreach (DiscordGuild guild in discord.Guilds.Values)
+                {
+                    if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}"))
+                    {
+                        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}");
+                        File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt");
+
+                        locations.Add(guild.Id, new List<Location>() { new Location("Level_1", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
+                    }
+
+                    if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt"))
+                    {
+                        File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt");
+                    }
+                    else
+                    {
+                        using (StreamReader rpgStreamReader = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt"))
+                        using (JsonTextReader rpgReader = new JsonTextReader(rpgStreamReader))
+                        {
+                            JsonSerializer serializer = new JsonSerializer();
+                            serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                            Dictionary<ulong, List<Location>> _locations = (Dictionary<ulong, List<Location>>)serializer.Deserialize(rpgReader, typeof(Dictionary<ulong, List<Location>>));
+
+                            if (_locations != null)
+                            {
+                                if (_locations != null)
+                                {
+                                    if (!locations.ContainsKey(guild.Id) && _locations.ContainsKey(guild.Id))
+                                    {
+                                        locations.Add(guild.Id, _locations[guild.Id]);
+                                        locations.Add(guild.Id, new List<Location>() { new Location("Level_1", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
+                                    }
+                                }
+                                else
+                                {
+                                    locations.Add(guild.Id, new List<Location>() { new Location("Level_1", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
+                                }
+                            }
+                            else
+                            {
+                                locations.Add(guild.Id, new List<Location>() { new Location("Level_1", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
+                            }
+                        }
+                    }
+
+                }
+
+                foreach (DiscordGuild guild in discord.Guilds.Values)
+                {
+                    if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}"))
+                    {
+                        if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
+                        {
+                            File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt");
+                        }
+                        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}");
+                        File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt");
+
+                        players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
+                    }
+                    else
+                    {
+                        if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
+                        {
+                            File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt");
+                            players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
+                        }
+                        else
+                        {
+                            using (StreamReader rpgStreamReader = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
+                            using (JsonTextReader rpgReader = new JsonTextReader(rpgStreamReader))
+                            {
+                                JsonSerializer serializer = new JsonSerializer();
+                                serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                                serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                                Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>> _players = (Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>>)serializer.Deserialize(rpgReader, typeof(Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>>));
+
+                                if (_players != null)
+                                {
+                                    if (_players.ContainsKey(guild.Id) && !players.ContainsKey(guild.Id))
+                                    {
+                                        players.Add(guild.Id, players[guild.Id]);
+                                    }
+                                    else
+                                    {
+                                        players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
+                                    }
+                                }
+                                else
+                                {
+                                    players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+            }
+            else
+            {
+                /*foreach (ulong guild in locations.Keys)
+                {
+                    using (StreamWriter rpgStreamWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild}\\locations.txt"))
+                    using (JsonTextWriter rpgWriter = new JsonTextWriter(rpgStreamWriter))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                        serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                        serializer.Serialize(rpgWriter, locations);
+                    }
+                }*/
+            }
+
+            await Task.CompletedTask;
         }
     }
 }
