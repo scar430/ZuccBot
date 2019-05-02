@@ -62,16 +62,21 @@ namespace ZuccBot.ZuccRPG
         [Command(commandPrefix + "items")]
         public async Task Items(CommandContext ctx)
         {
-            var embed = new DiscordEmbedBuilder() { Title = "**Inventory**", Description = "All items currently held by the player.", Color = DiscordColor.CornflowerBlue };
+            var embed = new DiscordEmbedBuilder() { Title = "**Inventory**", Color = DiscordColor.CornflowerBlue };
 
-            foreach (Item item in Program.players[ctx.Channel.Guild.Id][ctx.User].items)
+            if (Program.players[ctx.Channel.Guild.Id][ctx.User].items.Count > 0)
             {
-                embed.AddField(item.name, "No description available.", false);
+                foreach (Item item in Program.players[ctx.Channel.Guild.Id][ctx.User].items)
+                {
+                    embed.AddField(item.name, "No description available.", false);
+                }
+            }
+            else
+            {
+                embed.Description = $"{ctx.User}'s Inventory is empty.";
             }
 
-            DiscordEmbed items = embed;
-
-            await ctx.RespondAsync("", false, items);
+            await ctx.RespondAsync("", false, embed);
 
             await Task.CompletedTask;
         }
@@ -106,11 +111,11 @@ namespace ZuccBot.ZuccRPG
                             vessel.footSlot = _item;
                             break;
                     }
-                    embed.Description = $"You have successfully equipped {item.name}.";
+                    embed.Description = $"{ctx.User.Mention} has successfully equipped {item.name}.";
                 }
                 else
                 {
-                    embed.Description = $"You have failed to equip {item.name}, this item is not a known piece of equipment.";
+                    embed.Description = $"{ctx.User.Mention} is struggling to find their armor.";
                 }
 
                 if (vessel.headSlot != null)
@@ -186,20 +191,21 @@ namespace ZuccBot.ZuccRPG
                     //Check if the current location has the player in it.
                     if (curLoc.entities.Exists(x => x == vessel as Entity))
                     {
-                        //If we found the player then we need to check if the location they want to go to even exists.
-                        foreach (Location newLocation in Program.locations[ctx.Guild.Id])
+                        //If the location exists then remove them from the old location and place them in the new location.
+                        if (Program.locations[ctx.Guild.Id].Exists(x => x.name == desiredLoc))
                         {
-                            //If the location exists then remove them from the old location and place them in the new location.
-                            if (Program.locations[ctx.Guild.Id].Exists(x => x.name == desiredLoc))
-                            {
-                                curLoc.entities.Remove(vessel);
-                                newLocation.entities.Add(vessel);
-                            }
-                            else
-                            {
-                                continue;
-                            }
-                            break;
+                            var newLocation = Program.locations[ctx.Guild.Id].Find(x => x.name == desiredLoc);
+
+                            curLoc.entities.Remove(vessel);
+                            newLocation.SpawnEnemies(ctx.Guild);
+                            newLocation.entities.Add(vessel);
+
+                            await ctx.Channel.SendMessageAsync("", false, new DiscordEmbedBuilder() { Title = $"{ctx.User.Username} has moved to {newLocation.name}.", Color = DiscordColor.CornflowerBlue });
+                        }
+                        else
+                        {
+                            await ctx.Channel.SendMessageAsync("", false, new DiscordEmbedBuilder() { Title = $"{ctx.User.Username} is aimlessly wandering around.", Color = DiscordColor.CornflowerBlue });
+                            continue;
                         }
                         break;
                     }
@@ -230,11 +236,7 @@ namespace ZuccBot.ZuccRPG
                 locationString += $"\n{location.name}";
             }
 
-            var embed = new DiscordEmbedBuilder() { Title = "**Locations**", Description = locationString, Color = DiscordColor.CornflowerBlue };
-
-            DiscordEmbed locationMsg = embed;
-
-            await ctx.RespondAsync("", false, locationMsg);
+            await ctx.RespondAsync("", false, new DiscordEmbedBuilder() { Title = "**Locations**", Description = locationString, Color = DiscordColor.CornflowerBlue });
 
             await ctx.Message.DeleteAsync();
 
@@ -253,9 +255,9 @@ namespace ZuccBot.ZuccRPG
                 //Check if the player is in this location.
                 if (location.entities.Contains(vessel as Entity))
                 {
-                    var embed = new DiscordEmbedBuilder() { Title = $"**{location.name} Information**", Description = $"Every important detail about a location.", Color = DiscordColor.CornflowerBlue };
+                    var infoHere = new DiscordEmbedBuilder() { Title = $"**{location.name} Information**", Description = $"Every important detail about a location.", Color = DiscordColor.CornflowerBlue };
 
-                    embed.AddField("*Location Name*", $"{location.name}");
+                    infoHere.AddField("*Location Name*", $"{location.name}");
 
                     if (location.entities != null && location.entities.Count > 0)
                     {
@@ -266,10 +268,8 @@ namespace ZuccBot.ZuccRPG
                             entities += $"{entity.name}\n";
                         }
 
-                        embed.AddField("*Entities*", entities);
+                        infoHere.AddField("*Entities*", entities);
                     }
-
-                    DiscordEmbed infoHere = embed;
 
                     await ctx.RespondAsync("", false, infoHere);
                 }
@@ -306,6 +306,7 @@ namespace ZuccBot.ZuccRPG
                             //Check that the enemy specified by the player exists in the same location as the player.
                             if (location.entities.Exists(x => x.name == enemyName))
                             {
+
                                 //Save the enemy to memory.  (Linq operations tend to be heavy)
                                 var enemy = location.entities.Find(x => x.name == enemyName);
 

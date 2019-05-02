@@ -64,8 +64,6 @@ namespace ZuccBot
             {
                 //Ask me anything
                 StringPrefix = ">",
-
-                //Removes the default help command
                 EnableDefaultHelp = false
             });
 
@@ -368,7 +366,21 @@ namespace ZuccBot
                 //**NOTE**There were problems with constants and switch statements and emojis, that's why this extremely convulated if statement exists
                 //Check if the message embed is the same as the first listed embed in the txt file. (the embeds are listed on the txt file in the correct order they should be displayed, e.g. the first listed embed is the first embed that is called)
 
-                CombatEntity character = new CombatEntity(ZuccRPG.RPGassets.Race.Dwarf, Class.Knight, 1, 0, 0, 0, e.User.Mention, new List<Item>());
+                CombatEntity character = new CombatEntity(Race.Dwarf, Class.Knight, 1, 0, 0, 0, e.User.Mention, new List<Item>());
+
+                using (StreamReader itemSR = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\ItemConfig.txt"))
+                using (JsonTextReader itemJTR = new JsonTextReader(itemSR))
+                {
+                    JsonSerializer _serializer = new JsonSerializer();
+                    serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                    serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                    Dictionary<string, List<Item>> _locations = (Dictionary<string, List<Item>>)_serializer.Deserialize(itemJTR, typeof(Dictionary<string, List<Item>>));
+
+                    Weapon club = _locations["Crude"].Find(x => x.name == "Club") as Weapon;
+
+                    character.items.Add(club);
+                }
 
                 if (e.Message.Embeds[0].Title == embed[0].Title)
                 {
@@ -379,19 +391,19 @@ namespace ZuccBot
                         {
                             if (e.Emoji == DiscordEmoji.FromName(discord, ":man:"))
                             {
-                                character.race = ZuccRPG.RPGassets.Race.Human;
+                                character.race = Race.Human;
                                 character.constitution += 1;
                             }
                             else
                                 if (e.Emoji == DiscordEmoji.FromName(discord, ":leaves:"))
                             {
-                                character.race = ZuccRPG.RPGassets.Race.Elf;
+                                character.race = Race.Elf;
                                 character.dexterity += 1;
                             }
                             else
                                 if (e.Emoji == DiscordEmoji.FromName(discord, ":pick:"))
                             {
-                                character.race = ZuccRPG.RPGassets.Race.Dwarf;
+                                character.race = Race.Dwarf;
                                 character.strength += 1;
                             }
 
@@ -401,7 +413,7 @@ namespace ZuccBot
 
                             var msg = await e.Message.ModifyAsync("", embed[1]);
 
-                            //These emojis should correspond with the choices on the next page (page 2 or element 1)
+                            //These emojis should correspond with the choices on the next page (page 2 A.K.A. element 1)
                             await msg.CreateReactionAsync(DiscordEmoji.FromName(discord, ":crossed_swords:"));
                             await msg.CreateReactionAsync(DiscordEmoji.FromName(discord, ":alembic:"));
                             await msg.CreateReactionAsync(DiscordEmoji.FromName(discord, ":dagger:"));
@@ -446,12 +458,80 @@ namespace ZuccBot
 
                             await rpgCheck(true);
 
-                            Console.WriteLine("hi1 ");
                             players[e.Channel.GuildId].Add(e.User, character);
-                            Console.WriteLine("hi2 ");
                             locations[e.Channel.GuildId][0].entities.Add(players[e.Channel.GuildId][e.User]);
 
                             await e.Message.DeleteAsync();
+
+                            var confirmation = new DiscordEmbedBuilder() { Title = $"{e.User.Username} has created a new character!", Color = DiscordColor.CornflowerBlue };
+
+                            switch (character.@class)
+                            {
+                                case Class.Knight:
+                                    switch (character.race)
+                                    {
+                                        case Race.Human:
+                                            confirmation.Description = $"{e.User.Mention} has created a Human Knight.";
+                                            break;
+                                        case Race.Dwarf:
+                                            confirmation.Description = $"{e.User.Mention} has created a Dwarven Knight.";
+                                            break;
+                                        case Race.Elf:
+                                            confirmation.Description = $"{e.User.Mention} has created an Elven  Knight.";
+                                            break;
+                                        case Race.Goblin:
+                                            break;
+                                        case Race.Orc:
+                                            break;
+                                        case Race.Troll:
+                                            break;
+                                    }
+                                    break;
+                                case Class.Mage:
+                                    switch (character.race)
+                                    {
+                                        case Race.Human:
+                                            confirmation.Description = $"{e.User.Mention} has created a Human Mage.";
+                                            break;
+                                        case Race.Dwarf:
+                                            confirmation.Description = $"{e.User.Mention} has created a Dwarven Mage.";
+                                            break;
+                                        case Race.Elf:
+                                            confirmation.Description = $"{e.User.Mention} has created an Elf Mage.";
+                                            break;
+                                        case Race.Goblin:
+                                            break;
+                                        case Race.Orc:
+                                            break;
+                                        case Race.Troll:
+                                            break;
+                                    }
+                                    break;
+                                case Class.Rouge:
+                                    switch (character.race)
+                                    {
+                                        case Race.Human:
+                                            confirmation.Description = $"{e.User.Mention} has created a Human Rouge.";
+                                            break;
+                                        case Race.Dwarf:
+                                            confirmation.Description = $"{e.User.Mention} has created a Dwarven Rouge.";
+                                            break;
+                                        case Race.Elf:
+                                            confirmation.Description = $"{e.User.Mention} has created an Elf Rouge.";
+                                            break;
+                                        case Race.Goblin:
+                                            break;
+                                        case Race.Orc:
+                                            break;
+                                        case Race.Troll:
+                                            break;
+                                    }
+                                    break;
+                            }
+
+                            DiscordEmbed createConfirmation = confirmation;
+
+                            await e.Channel.SendMessageAsync("", false, createConfirmation);
 
                             //The task was completed successfully and no longer needs to be active
                             await Task.CompletedTask;
@@ -497,123 +577,141 @@ namespace ZuccBot
 
         public static async Task rpgCheck(bool read = true)
         {
-            if (read == true)
+            try
             {
-                foreach (DiscordGuild guild in discord.Guilds.Values)
+                if (read == true)
                 {
-                    if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}"))
+                    foreach (DiscordGuild guild in discord.Guilds.Values)
                     {
-                        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}");
-                        File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt");
-
-                        locations.Add(guild.Id, new List<Location>() { new Location("Level_1", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
-                    }
-
-                    if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt"))
-                    {
-                        File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt");
-                    }
-                    else
-                    {
-                        using (StreamReader rpgStreamReader = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt"))
-                        using (JsonTextReader rpgReader = new JsonTextReader(rpgStreamReader))
+                        if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}"))
                         {
-                            JsonSerializer serializer = new JsonSerializer();
-                            serializer.Converters.Add(new JavaScriptDateTimeConverter());
-                            serializer.NullValueHandling = NullValueHandling.Ignore;
+                            Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}");
+                            File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt");
 
-                            Dictionary<ulong, List<Location>> _locations = (Dictionary<ulong, List<Location>>)serializer.Deserialize(rpgReader, typeof(Dictionary<ulong, List<Location>>));
-
-                            if (_locations != null)
-                            {
-                                if (_locations != null)
-                                {
-                                    if (!locations.ContainsKey(guild.Id) && _locations.ContainsKey(guild.Id))
-                                    {
-                                        locations.Add(guild.Id, _locations[guild.Id]);
-                                        locations.Add(guild.Id, new List<Location>() { new Location("Level_1", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
-                                    }
-                                }
-                                else
-                                {
-                                    locations.Add(guild.Id, new List<Location>() { new Location("Level_1", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
-                                }
-                            }
-                            else
-                            {
-                                locations.Add(guild.Id, new List<Location>() { new Location("Level_1", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
-                            }
+                            locations.Add(guild.Id, new List<Location>() { new Location("Level_1", 1, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", 2, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", 3, Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
                         }
-                    }
 
-                }
-
-                foreach (DiscordGuild guild in discord.Guilds.Values)
-                {
-                    if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}"))
-                    {
-                        if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
+                        if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt"))
                         {
-                            File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt");
-                        }
-                        Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}");
-                        File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt");
-
-                        players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
-                    }
-                    else
-                    {
-                        if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
-                        {
-                            File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt");
-                            players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
+                            File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt");
                         }
                         else
                         {
-                            using (StreamReader rpgStreamReader = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
+                            using (StreamReader rpgStreamReader = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt"))
                             using (JsonTextReader rpgReader = new JsonTextReader(rpgStreamReader))
                             {
                                 JsonSerializer serializer = new JsonSerializer();
                                 serializer.Converters.Add(new JavaScriptDateTimeConverter());
                                 serializer.NullValueHandling = NullValueHandling.Ignore;
 
-                                Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>> _players = (Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>>)serializer.Deserialize(rpgReader, typeof(Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>>));
+                                Dictionary<ulong, List<Location>> _locations = (Dictionary<ulong, List<Location>>)serializer.Deserialize(rpgReader, typeof(Dictionary<ulong, List<Location>>));
 
-                                if (_players != null)
+                                if (_locations != null)
                                 {
-                                    if (_players.ContainsKey(guild.Id) && !players.ContainsKey(guild.Id))
+                                    if (_locations != null)
                                     {
-                                        players.Add(guild.Id, players[guild.Id]);
+                                        if (!locations.ContainsKey(guild.Id) && _locations.ContainsKey(guild.Id))
+                                        {
+                                            locations.Add(guild.Id, _locations[guild.Id]);
+                                            locations.Add(guild.Id, new List<Location>() { new Location("Level_1", 1, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", 2, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", 3, Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
+                                        }
+                                    }
+                                    else
+                                    {
+                                        locations.Add(guild.Id, new List<Location>() { new Location("Level_1", 1, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", 2, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", 3, Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
+                                    }
+                                }
+                                else
+                                {
+                                    locations.Add(guild.Id, new List<Location>() { new Location("Level_1", 1, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", 2, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", 3, Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
+                                }
+                            }
+                        }
+
+                    }
+
+                    foreach (DiscordGuild guild in discord.Guilds.Values)
+                    {
+                        if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}"))
+                        {
+                            Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}");
+                            if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
+                            {
+                                File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt");
+                            }
+                            players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
+                        }
+                        else
+                        {
+                            if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
+                            {
+                                File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt");
+                                players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
+                            }
+                            else
+                            {
+                                using (StreamReader rpgStreamReader = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\players.txt"))
+                                using (JsonTextReader rpgReader = new JsonTextReader(rpgStreamReader))
+                                {
+                                    JsonSerializer serializer = new JsonSerializer();
+                                    serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                                    serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                                    Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>> _players = (Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>>)serializer.Deserialize(rpgReader, typeof(Dictionary<ulong, Dictionary<DiscordUser, CombatEntity>>));
+
+                                    if (_players != null)
+                                    {
+                                        if (_players.ContainsKey(guild.Id) && !players.ContainsKey(guild.Id))
+                                        {
+                                            players.Add(guild.Id, players[guild.Id]);
+                                        }
+                                        else
+                                        {
+                                            players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
+                                        }
                                     }
                                     else
                                     {
                                         players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
                                     }
                                 }
-                                else
-                                {
-                                    players.Add(guild.Id, new Dictionary<DiscordUser, CombatEntity>());
-                                }
                             }
+
                         }
-                        
+                    }
+                }
+                else
+                {
+                    foreach (ulong guild in locations.Keys)
+                    {
+                        using (StreamWriter rpgStreamWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild}\\locations.txt"))
+                        using (JsonTextWriter rpgWriter = new JsonTextWriter(rpgStreamWriter))
+                        {
+                            JsonSerializer serializer = new JsonSerializer();
+                            serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                            serializer.Serialize(rpgWriter, locations[guild]);
+                        }
+                    }
+
+                    foreach (ulong guild in players.Keys)
+                    {
+                        using (StreamWriter rpgStreamWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild}\\players.txt"))
+                        using (JsonTextWriter rpgWriter = new JsonTextWriter(rpgStreamWriter))
+                        {
+                            JsonSerializer serializer = new JsonSerializer();
+                            serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                            serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                            serializer.Serialize(rpgWriter, players[guild]);
+                        }
                     }
                 }
             }
-            else
+            catch (System.IO.IOException e)
             {
-                /*foreach (ulong guild in locations.Keys)
-                {
-                    using (StreamWriter rpgStreamWriter = new StreamWriter($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild}\\locations.txt"))
-                    using (JsonTextWriter rpgWriter = new JsonTextWriter(rpgStreamWriter))
-                    {
-                        JsonSerializer serializer = new JsonSerializer();
-                        serializer.Converters.Add(new JavaScriptDateTimeConverter());
-                        serializer.NullValueHandling = NullValueHandling.Ignore;
-
-                        serializer.Serialize(rpgWriter, locations);
-                    }
-                }*/
+                Console.WriteLine(e);
             }
 
             await Task.CompletedTask;
