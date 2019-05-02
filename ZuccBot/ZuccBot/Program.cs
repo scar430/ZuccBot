@@ -366,7 +366,7 @@ namespace ZuccBot
                 //**NOTE**There were problems with constants and switch statements and emojis, that's why this extremely convulated if statement exists
                 //Check if the message embed is the same as the first listed embed in the txt file. (the embeds are listed on the txt file in the correct order they should be displayed, e.g. the first listed embed is the first embed that is called)
 
-                CombatEntity character = new CombatEntity(Race.Dwarf, Class.Knight, 1, 0, 0, 0, e.User.Mention, new List<Item>());
+                CombatEntity character = new CombatEntity(Race.Dwarf, Class.Knight, 8, 0, 0, 0, e.User.Mention, _items: new List<Item>());
 
                 using (StreamReader itemSR = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\ItemConfig.txt"))
                 using (JsonTextReader itemJTR = new JsonTextReader(itemSR))
@@ -375,11 +375,11 @@ namespace ZuccBot
                     serializer.Converters.Add(new JavaScriptDateTimeConverter());
                     serializer.NullValueHandling = NullValueHandling.Ignore;
 
-                    Dictionary<string, List<Item>> _locations = (Dictionary<string, List<Item>>)_serializer.Deserialize(itemJTR, typeof(Dictionary<string, List<Item>>));
+                    Dictionary<string, List<Item>> _items = (Dictionary<string, List<Item>>)_serializer.Deserialize(itemJTR, typeof(Dictionary<string, List<Item>>));
 
-                    Weapon club = _locations["Crude"].Find(x => x.name == "Club") as Weapon;
-
-                    character.items.Add(club);
+                    Weapon club = _items["Crude"].Find(x => x.name == "Club") as Weapon;
+                    Console.WriteLine("add")
+                    character.items = new List<Item>() { club };
                 }
 
                 if (e.Message.Embeds[0].Title == embed[0].Title)
@@ -586,14 +586,13 @@ namespace ZuccBot
                         if (!Directory.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}"))
                         {
                             Directory.CreateDirectory($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}");
-                            File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt");
-
-                            locations.Add(guild.Id, new List<Location>() { new Location("Level_1", 1, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", 2, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", 3, Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
                         }
 
                         if (!File.Exists($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt"))
                         {
                             File.Create($"{Directory.GetCurrentDirectory()}\\GenericRPG\\{guild.Id}\\locations.txt");
+
+                            locations.Add(guild.Id, new List<Location>() { new Location("Level_1", 1, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_2", 2, Population.Aggressive, null, new List<Entity>(), new List<Item>()), new Location("Level_3", 3, Population.Aggressive, null, new List<Entity>(), new List<Item>()) });
                         }
                         else
                         {

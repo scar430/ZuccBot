@@ -45,9 +45,7 @@ namespace ZuccBot.ZuccRPG
 
                 //Create the first page in the character creation embed, call the first embed list in the character creation config and give it it's reactions that correspond with it'selections
                 List<DiscordEmbed> embed = (List<DiscordEmbed>)serializer.Deserialize(file, typeof(List<DiscordEmbed>));
-                //var msg = await ctx.Channel.SendMessageAsync($"", false, embed[0]);
 
-                //var dm = await ctx.Member.CreateDmChannelAsync();
                 var msg = await ctx.Channel.SendMessageAsync($"", false, embed[0]);
 
                 await msg.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":man:"));
@@ -64,16 +62,17 @@ namespace ZuccBot.ZuccRPG
         {
             var embed = new DiscordEmbedBuilder() { Title = "**Inventory**", Color = DiscordColor.CornflowerBlue };
 
-            if (Program.players[ctx.Channel.Guild.Id][ctx.User].items.Count > 0)
+            if (Program.players[ctx.Channel.Guild.Id][ctx.User].items.Count == 0)
+            {
+                embed.Description = $"{ctx.User}'s Inventory is empty.";
+            }
+            else
             {
                 foreach (Item item in Program.players[ctx.Channel.Guild.Id][ctx.User].items)
                 {
                     embed.AddField(item.name, "No description available.", false);
                 }
-            }
-            else
-            {
-                embed.Description = $"{ctx.User}'s Inventory is empty.";
+                
             }
 
             await ctx.RespondAsync("", false, embed);
