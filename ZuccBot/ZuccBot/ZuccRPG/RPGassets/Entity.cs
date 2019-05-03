@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using DSharpPlus;
+﻿using System.Collections.Generic;
+using System;
 
 namespace ZuccBot.ZuccRPG.RPGassets
 {
@@ -36,11 +34,11 @@ namespace ZuccBot.ZuccRPG.RPGassets
 
     public class CombatEntity : Entity
     {
-        public Race race { get; set; }
-        public Class @class { get; set; }
+        public Race race;//Species, (e.g. Elf) adds a stat modifier
+        public Class @class;//Profession, (e.g. Knight) adds a stat modifier
 
-        public int maxHP { get; set; }//Maximum Hit Points. This is used to stop the player and other entities from using healing items constantly to MASSIVELY buff their health
-        public int curHP { get; set; }//What the current Hit Point score is at, This can not exceed the maxiumHP integer and if it reaches 0 or lower then death will occur
+        public int maxHP = 0;//Maximum Hit Points. This is used to stop the player and other entities from using healing items constantly to MASSIVELY buff their health
+        public int curHP = 0;//What the current Hit Point score is at, This can not exceed the maxiumHP integer and if it reaches 0 or lower then death will occur
 
         //Armor slots that can contian Items.
         public Item headSlot { get; set; }//Equip Items to the head.
@@ -48,15 +46,18 @@ namespace ZuccBot.ZuccRPG.RPGassets
         public Item legSlot { get; set; }//Equip Items to the Legs.
         public Item footSlot { get; set; }//Equip Items to the Feet.
 
-        public int strength { get; set; }
-        public int dexterity { get; set; }
-        public int constitution { get; set; }
+        public int strength = 0;//Modifier with strength based weapons.
+        public int dexterity = 0;//Modifier with dexterity based weapons.
+        public int constitution = 0;//Modifier with constitution based weapons.
 
+        //Constructor
         public CombatEntity(Race _race, Class _class, int _maxHP, int _strength, int _dexterity, int _constitution, string _name, List<Item> _items) : base(_name, _items)
         {
             race = _race;
             @class = _class;
             maxHP = _maxHP;
+            maxHP = curHP;
+            Console.WriteLine(curHP);
             strength = _strength;
             dexterity = _dexterity;
             constitution = _constitution;

@@ -60,121 +60,121 @@ namespace ZuccBot.ZuccRPG.RPGassets
         //If the character rolls a one they miss.
         public string Attack(CombatEntity attacker, CombatEntity defender, Location location, DiscordGuild guild)
         {
-            Random random = new Random();
-            int roll = 0;
-
-            switch (die)
+            if (attacker.curHP > 0)
             {
-                case Die.d4:
-                    roll = random.Next(0, 5);
-                    break;
-                case Die.d6:
-                    roll = random.Next(0, 7);
-                    break;
-                case Die.d8:
-                    roll = random.Next(0, 9);
-                    break;
-                case Die.d10:
-                    roll = random.Next(0, 11);
-                    break;
-                case Die.d12:
-                    roll = random.Next(0, 13);
-                    break;
-                case Die.d20:
-                    roll = random.Next(0, 21);
-                    break;
-            }
+                Random random = new Random();
+                int roll = 0;
 
-            if (roll == 1)
-            {
-                return $" has missed their target.";
+                //Roll depending on what attack die you have
+                switch (die)
+                {
+                    case Die.d4:
+                        roll = random.Next(0, 5);
+                        break;
+                    case Die.d6:
+                        roll = random.Next(0, 7);
+                        break;
+                    case Die.d8:
+                        roll = random.Next(0, 9);
+                        break;
+                    case Die.d10:
+                        roll = random.Next(0, 11);
+                        break;
+                    case Die.d12:
+                        roll = random.Next(0, 13);
+                        break;
+                    case Die.d20:
+                        roll = random.Next(0, 21);
+                        break;
+                }
+
+                //This is a miss
+                if (roll == 1)
+                {
+                    return $"{attacker.name} has missed their target.";
+                }
+                else
+                {
+                    //The weapon is looking to match its modifier with the players skills (If you have a strength based weapon you want high strength stats)
+                    switch (skill)
+                    {
+                        default:
+                            //Minus health
+                            defender.curHP -= roll;
+                            //Is defender dead?
+                            if (defender.curHP > 0)
+                            {
+                                //If not dead, return how much damage we did
+                                return $"{attacker.name} has dealt {roll} damage to {defender.name}.";
+                            }
+                            else
+                            {
+                                //Remove the entity from the game
+                                location.entities.Remove(defender as Entity);
+
+                                //Hand out loot
+                                foreach (Item item in defender.items)
+                                {
+                                    attacker.items.Add(item);
+                                }
+
+                                //Return death message
+                                return $"{attacker.name} has slain {defender.name}.";
+
+                                //It's the same for the rest of them
+                            }
+                        case EquipmentSkill.strength:
+                            defender.curHP -= roll + attacker.strength;
+                            if (defender.curHP > 0)
+                            {
+                                return $"{attacker.name} has dealt {roll + attacker.strength} damage to {defender.name}.";
+                            }
+                            else
+                            {
+                                location.entities.Remove(defender as Entity);
+                                foreach (Item item in defender.items)
+                                {
+                                    attacker.items.Add(item);
+                                }
+                                return $"{attacker.name} has slain {defender.name}.";
+                            }
+                        case EquipmentSkill.dextrious:
+                            defender.curHP -= roll + attacker.dexterity;
+                            if (defender.curHP > 0)
+                            {
+                                return $"{attacker.name} has dealt {roll + attacker.dexterity} damage to {defender.name}.";
+                            }
+                            else
+                            {
+                                location.entities.Remove(defender as Entity);
+                                foreach (Item item in defender.items)
+                                {
+                                    attacker.items.Add(item);
+                                }
+                                return $"{attacker.name} has slain {defender.name}.";
+                            }
+                        case EquipmentSkill.constitution:
+                            defender.curHP -= roll + attacker.constitution;
+                            if (defender.curHP > 0)
+                            {
+                                return $"{attacker.name} has dealt {roll + attacker.constitution} damage to {defender.name}.";
+                            }
+                            else
+                            {
+                                location.entities.Remove(defender as Entity);
+                                foreach (Item item in defender.items)
+                                {
+                                    attacker.items.Add(item);
+                                }
+                                return $"{attacker.name} has slain {defender.name}.";
+                            }
+                    }
+                }
             }
             else
             {
-                switch (skill)
-                {
-                    default:
-                        defender.curHP -= roll;
-                        if (defender.curHP > 0)
-                        {
-                            return $"{attacker.name} has dealt {roll} damage to {defender.name}.";
-                        }
-                        else
-                        {
-                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Id + "\\Locations.txt"))
-                            {
-                                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
-
-                                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
-
-                                List<Location> locations = (List<Location>)serializer.Deserialize(locationReader, typeof(List<Location>));
-
-                                location.entities.Remove(defender as Entity);
-                            }
-                            return $"{attacker.name} has slain {defender.name}.";
-                        }
-                    case EquipmentSkill.strength:
-                        defender.curHP -= roll + attacker.strength;
-                        if (defender.curHP > 0)
-                        {
-                            return $"{attacker.name} has dealt {roll + attacker.strength} damage to {defender.name}.";
-                        }
-                        else
-                        {
-                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Id + "\\Locations.txt"))
-                            {
-                                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
-
-                                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
-
-                                List<Location> locations = (List<Location>)serializer.Deserialize(locationReader, typeof(List<Location>));
-
-                                location.entities.Remove(defender as Entity);
-                            }
-                            return $"{attacker.name} has slain {defender.name}.";
-                        }
-                    case EquipmentSkill.dextrious:
-                        defender.curHP -= roll + attacker.dexterity;
-                        if (defender.curHP > 0)
-                        {
-                            return $"{attacker.name} has dealt {roll + attacker.dexterity} damage to {defender.name}.";
-                        }
-                        else
-                        {
-                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Id + "\\Locations.txt"))
-                            {
-                                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
-
-                                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
-
-                                List<Location> locations = (List<Location>)serializer.Deserialize(locationReader, typeof(List<Location>));
-
-                                location.entities.Remove(defender as Entity);
-                            }
-                            return $"{attacker.name} has slain {defender.name}.";
-                        }
-                    case EquipmentSkill.constitution:
-                        defender.curHP -= roll + attacker.constitution;
-                        if (defender.curHP > 0)
-                        {
-                            return $"{attacker.name} has dealt {roll + attacker.constitution} damage to {defender.name}.";
-                        }
-                        else
-                        {
-                            List<Location> newLocations = new List<Location>();
-                            using (StreamReader locationReader = File.OpenText(Directory.GetCurrentDirectory() + "\\GenericRPG\\" + guild.Id + "\\Locations.txt"))
-                            {
-                                ITraceWriter tcr = new MemoryTraceWriter();//This is more of a debug thing, it's just checking in on you and what your doing.
-
-                                JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings { TraceWriter = tcr });
-
-                                List<Location> locations = (List<Location>)serializer.Deserialize(locationReader, typeof(List<Location>));
-
-                                location.entities.Remove(defender as Entity);
-                            }
-                            return $"{attacker.name} has slain {defender.name}.";
-                        }
-                }
+                //We aren't alive so return failed attack message
+                return $"{attacker.name}'s lifeless body twitches.";
             }
         }
     }

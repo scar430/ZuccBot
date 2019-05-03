@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using ZuccBot.ZuccRPG;
 
 namespace ZuccBot
 {
@@ -40,29 +35,23 @@ namespace ZuccBot
 
             foreach (MemberInfo member in typeof(Commands).GetMembers())
             {
-                Console.WriteLine("1");
                 Attribute[] attributes = Attribute.GetCustomAttributes(member);
 
                 foreach (System.Attribute attribute in attributes)
                 {
-                    Console.WriteLine("2");
                     if (attribute is CommandAttribute)
                     {
-                        Console.WriteLine("3");
                         CommandAttribute command = (CommandAttribute)attribute;
 
                         foreach (System.Attribute _attribute in attributes)
                         {
-                            Console.WriteLine("4");
                             if (attribute is DescriptionAttribute)
                             {
-                                Console.WriteLine("5");
                                 DescriptionAttribute description = (DescriptionAttribute)attribute;
                                 embed.AddField(command.Name.ToString(), description.Description.ToString());
                             }
                             else
                             {
-                                Console.WriteLine("6");
                                 embed.AddField(command.Name.ToString(), "No description available.");
                             }
                         }
@@ -74,14 +63,13 @@ namespace ZuccBot
 
             await ctx.RespondAsync("", false, utilityEmbed);
 
-            Console.WriteLine("Embed has sent.");
-
             await Task.CompletedTask;
         }
 
         [Command("log")]
         public async Task log(CommandContext ctx)
         {
+            //if log is not on, turn it on
             if (Program.logEnabled == false)
             {
                 Program.logEnabled = true;
@@ -99,8 +87,8 @@ namespace ZuccBot
         [Command("ShutDown"), Aliases("off", "shutdown", "shutoff", "die", "death", "sleep"), RequireOwner, Hidden]
         public async Task ShutOff(CommandContext ctx)
         {
-            await ctx.RespondAsync($"ZuccBot is turning off.");
-            await Program.rpgCheck(false);
+            await ctx.RespondAsync("", false, new DiscordEmbedBuilder() { Title = $"ZuccBot is turning off.", Color = DiscordColor.CornflowerBlue } );
+            await Program.rpgInit(false);
             await ctx.Message.DeleteAsync();
             Environment.Exit(420);//huehuehuehue
         }  
@@ -178,7 +166,7 @@ namespace ZuccBot
         public async Task addRole(CommandContext ctx, DiscordMember member, DiscordRole role)
         {
             await ctx.Guild.GrantRoleAsync(member, role);
-            await ctx.RespondAsync($"Granted {role} to {member.DisplayName}.");
+            await ctx.RespondAsync("", false, new DiscordEmbedBuilder() { Title = $"Granted {role} to {member.DisplayName}.", Color = DiscordColor.CornflowerBlue });
             await ctx.Message.DeleteAsync();
         }
 
@@ -189,7 +177,7 @@ namespace ZuccBot
         public async Task removeRole(CommandContext ctx, DiscordMember member, DiscordRole role, string reason)
         {
             await ctx.Guild.RevokeRoleAsync(member, role, reason);
-            await ctx.RespondAsync($"Revoked {member.DisplayName}'s role as {role} because of ''{reason}''.");
+            await ctx.RespondAsync("", false, new DiscordEmbedBuilder() { Title = $"Revoked {member.DisplayName}'s role as {role} because of ''{reason}''.", Color = DiscordColor.CornflowerBlue });
             await ctx.Message.DeleteAsync();
         }
 
@@ -201,7 +189,7 @@ namespace ZuccBot
         public async Task kickUser(CommandContext ctx, DiscordMember member)
         {
             await ctx.Guild.RemoveMemberAsync(member);//Removing the mentioned user from the Guild.
-            await ctx.RespondAsync($"Kicked {member.DisplayName} from {ctx.Guild}.");//Just the Bot telling everyone what it is doing
+            await ctx.RespondAsync("", false, new DiscordEmbedBuilder() { Title = $"Kicked {member.DisplayName} from {ctx.Guild}.", Color = DiscordColor.CornflowerBlue });//Just the Bot telling everyone what it is doing
             await ctx.Message.DeleteAsync();
         }
 
@@ -209,7 +197,7 @@ namespace ZuccBot
         public async Task banUser(CommandContext ctx, DiscordMember member, int days, string reason)
         {
             await ctx.Guild.BanMemberAsync(member, days, reason);
-            await ctx.RespondAsync($"Banned {member} from {ctx.Guild} for ''{reason}''. The Ban will be lifted {days} days from now.");
+            await ctx.RespondAsync("", false, new DiscordEmbedBuilder() { Title = $"Banned {member} from {ctx.Guild} for ''{reason}''. The Ban will be lifted {days} days from now.", Color = DiscordColor.CornflowerBlue });
             await ctx.Message.DeleteAsync();
         }
 
@@ -218,25 +206,6 @@ namespace ZuccBot
         {
             await ctx.RespondAsync($"List of Bans from {ctx.Guild} : ");//Just the bot telling everyone what it is posting.
             await ctx.Guild.GetBansAsync();
-            await ctx.Message.DeleteAsync();
-        }
-
-        //Due to a problem with connecting a mentioned user to a channel and muting them from that channel, these mute commands do not work
-        //Broken
-        [Command("muteUser"), Aliases("mute", "muteuser"), Description("Mute the mentioned user, this is for NO set time and you MUST use unmute to unmute the muted player"), RequirePermissions(Permissions.Administrator), Hidden]
-        public async Task muteUser(CommandContext ctx, DiscordMember member, string reason)
-        {
-            await member.SetMuteAsync(true, reason);//This is incorrect because I only mentioned the user and not in what channel they are being mute.
-            await ctx.RespondAsync($"Muted {member.DisplayName} for '{reason}'");//Just the bot telling everyone what it's doing.
-            await ctx.Message.DeleteAsync();
-        }
-
-        //Broken
-        [Command("unmuteUser"), Aliases("unmute", "unmuteuser", "nomute", "removemute", "rmute", "nmute", "omittmute", "omute"), RequirePermissions(Permissions.Administrator), Description("Unmute the mentioned user."), Hidden]
-        public async Task unmuteUser(CommandContext ctx, DiscordMember member, string reason)
-        {
-            await member.SetMuteAsync(false, reason);//Not sure how to reference the channel and the player and unmute them in that.
-            await ctx.RespondAsync($"Unmuted {member.DisplayName}.");//Just the bot telling everyone what it's doing.
             await ctx.Message.DeleteAsync();
         }
     }

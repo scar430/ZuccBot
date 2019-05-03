@@ -4726,23 +4726,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\ccjuniper\\.nuget\\packages\\": {},
+    "C:\\Users\\scar4\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ccjuniper\\Documents\\GitHub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccBot.csproj",
+      "projectUniqueName": "C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccBot.csproj",
       "projectName": "ZuccBot",
-      "projectPath": "C:\\Users\\ccjuniper\\Documents\\GitHub\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccBot.csproj",
-      "packagesPath": "C:\\Users\\ccjuniper\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ccjuniper\\Documents\\GitHub\\ZuccBot\\ZuccBot\\ZuccBot\\obj\\",
+      "projectPath": "C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\ZuccBot.csproj",
+      "packagesPath": "C:\\Users\\scar4\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\scar4\\Desktop\\Repositories\\ZuccBot\\ZuccBot\\ZuccBot\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\ccjuniper\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\scar4\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [

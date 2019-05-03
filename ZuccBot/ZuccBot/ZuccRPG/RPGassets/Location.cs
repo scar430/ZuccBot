@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
@@ -55,6 +56,26 @@ namespace ZuccBot.ZuccRPG.RPGassets
                             this.entities.Add(_entities.Find(x => x.name == "Goblin"));
                             this.entities.Add(_entities.Find(x => x.name == "Goblin"));
                             this.entities.Add(_entities.Find(x => x.name == "Orc"));
+
+                            using (StreamReader itemSR = new StreamReader($"{Directory.GetCurrentDirectory()}\\GenericRPG\\ItemConfig.txt"))
+                            using (JsonTextReader itemJTR = new JsonTextReader(itemSR))
+                            {
+                                JsonSerializer _serializer = new JsonSerializer();
+                                serializer.Converters.Add(new JavaScriptDateTimeConverter());
+                                serializer.NullValueHandling = NullValueHandling.Ignore;
+
+                                Dictionary<string, List<Item>> _items = (Dictionary<string, List<Item>>)_serializer.Deserialize(itemJTR, typeof(Dictionary<string, List<Item>>));
+
+                                foreach (Entity entity in _entities)
+                                {
+                                    for (int i = 0; i < 3; i++)
+                                    {
+                                        var soICanReadThis = _items["Crude"][new Random().Next(0, _items["Crude"].Count - 1)];
+                                        entity.items.Add(soICanReadThis);
+                                        Console.WriteLine(soICanReadThis);
+                                    }
+                                }
+                            }
                         }
                     }
                     break;

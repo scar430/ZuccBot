@@ -1,23 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Interactivity;
 using DSharpPlus.Entities;
-using System.Linq;
-using System.Collections;
-using DSharpPlus.Net;
 using Newtonsoft.Json;
 using System.IO;
-using Newtonsoft.Json.Linq;
-using ZuccBot.ZuccRPG;
-using System.Runtime.Serialization.Json;
 using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Converters;
 using ZuccBot.ZuccRPG.RPGassets;
-using System.Data.SQLite;
 
 namespace ZuccBot.ZuccRPG
 {
@@ -60,21 +50,16 @@ namespace ZuccBot.ZuccRPG
         [Command(commandPrefix + "items")]
         public async Task Items(CommandContext ctx)
         {
-            var embed = new DiscordEmbedBuilder() { Title = "**Inventory**", Color = DiscordColor.CornflowerBlue };
+            //Create embed
+            var embed = new DiscordEmbedBuilder() { Title = "**Inventory**", Color = DiscordColor.CornflowerBlue, Description = "If nothing is here then your inventory is empty." };
 
-            if (Program.players[ctx.Channel.Guild.Id][ctx.User].items.Count == 0)
+            //For all the items in players inventory create a new field and add it to the embed we made
+            foreach (Item item in Program.players[ctx.Channel.Guild.Id][ctx.User].items)
             {
-                embed.Description = $"{ctx.User}'s Inventory is empty.";
-            }
-            else
-            {
-                foreach (Item item in Program.players[ctx.Channel.Guild.Id][ctx.User].items)
-                {
-                    embed.AddField(item.name, "No description available.", false);
-                }
-                
+                embed.AddField($"*{item.name}*", "Item", false);
             }
 
+            //send the embed
             await ctx.RespondAsync("", false, embed);
 
             await Task.CompletedTask;
@@ -88,13 +73,19 @@ namespace ZuccBot.ZuccRPG
             //Keep this in memory so we aren't constantly looking for it.
             var vessel = Program.players[ctx.Channel.Guild.Id][ctx.User];
 
+            //Check if the item specified exists
             if (vessel.items.Exists(x => x.name == itemToEquip))
             {
+                //Make this item a var
                 var item = vessel.items.Find(x => x.name == itemToEquip);
+
+                //If the item is armor
                 if (item is Armor)
                 {
                     //Remember this as Armor
                     var _item = item as Armor;
+
+                    //Switch for what type of armor it is
                     switch (_item.armor)
                     {
                         case ArmorType.head:
@@ -110,13 +101,17 @@ namespace ZuccBot.ZuccRPG
                             vessel.footSlot = _item;
                             break;
                     }
+
+                    //The item was successfully equipped
                     embed.Description = $"{ctx.User.Mention} has successfully equipped {item.name}.";
                 }
                 else
                 {
+                    //Failed equip message
                     embed.Description = $"{ctx.User.Mention} is struggling to find their armor.";
                 }
 
+                //Display the players armor slots
                 if (vessel.headSlot != null)
                 {
                     embed.AddField($"*{vessel.headSlot.name}*", $"Head Slot", false);
@@ -278,6 +273,15 @@ namespace ZuccBot.ZuccRPG
             await Task.CompletedTask;
         }
 
+        //Yes i know this makes the game cheesable however I need a way for characters to heal, it's this or permadeath
+        [Command(commandPrefix + "rest")]
+        public async Task heal(CommandContext ctx)
+        {
+            Program.players[ctx.Guild.Id][ctx.User].curHP += Program.players[ctx.Guild.Id][ctx.User].maxHP;
+            await Task.CompletedTask;
+        }
+
+
         //Used to attack specified entities in the players current location
         [Command(commandPrefix + "attack"), Description("Attack an enemy in your current location, e.g. `>rpg>attack weaponName enemyName`")]
         public async Task Attack(CommandContext ctx, string weaponName, string enemyName)
@@ -317,6 +321,21 @@ namespace ZuccBot.ZuccRPG
                             {
                                 //Since the enemy couldn't be found create a unsuccessful attack message.
                                 embed.Description = $"{vessel.name} is wildly flailing around in {location.name}.";
+                            }
+                        }
+                        else
+                            if (weaponName == "fists")
+                        {
+                            Weapon fists = new Weapon(Die.d4, EquipmentSkill.simple, "fists");
+                            if (location.entities.Exists(x => x.name == enemyName))
+                            {
+
+                                //Save the enemy to memory.  (Linq operations tend to be heavy)
+                                var enemy = location.entities.Find(x => x.name == enemyName);
+
+                                //Since the weapon and enemy exist a successful attack message is created.
+                                embed.Description = $"Battle between { vessel.name} and { enemyName}.";
+                                embed.AddField($"*{vessel.name} has attacked {enemy.name}.*", $"{fists.Attack(vessel as CombatEntity, enemy as CombatEntity, location, ctx.Guild)}");
                             }
                         }
                         else
