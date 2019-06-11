@@ -50,7 +50,7 @@ namespace ZuccBot
             discord = new DiscordClient(new DiscordConfiguration
             {
                 //Don't look I'm exposed!
-                Token = "NTUzNDYwMTEwMzI5MTE4NzIx.XP8JRg.pNa8vVAE8e94SQQSDUYQuGNioGM",
+                Token = "NTUzNDYwMTEwMzI5MTE4NzIx.XP8JxA.0ehVy7gWNZEET0R0wvR-_VvtpVg",
 
                 //You know the drill...
                 TokenType = TokenType.Bot,
