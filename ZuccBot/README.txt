@@ -1,3 +1,6 @@
+WARNING
+- If you need to see an update history go to the "master" branch (which is no longer the master branch anymore.).
+
 GENERAL
 - This goes without being said, all the code is wonky however it is usable, everything does have some basic functionality to it and if not some then all.
 
