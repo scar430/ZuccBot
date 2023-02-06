@@ -49,8 +49,9 @@ namespace ZuccBot
             //Create the bots client
             discord = new DiscordClient(new DiscordConfiguration
             {
+                //As of 2/6/2023 I removed the token from this project since it is publicly displayed, in a functioning version of this you will need the token.
                 //Don't look I'm exposed!
-                Token = "NTUzNDYwMTEwMzI5MTE4NzIx.XP8Mgg.c3NuAurfHFt2Pov4iGn-_MevavI",
+                //Token = [DELETED]",
 
                 //You know the drill...
                 TokenType = TokenType.Bot,
